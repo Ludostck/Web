@@ -1,0 +1,126 @@
+/* style.css */
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#container {
+    display: flex;
+    height: 100%;
+}
+
+#sidebar {
+    width: 250px;
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.folder-name {
+    cursor: pointer;
+    padding: 10px;
+    display: block;
+    background-color: #666;
+    margin-bottom: 5px;
+    margin-top:  10px;
+}
+
+.files.hidden {
+    display: none;
+}
+
+.file {
+    padding: 5px 20px;
+    background-color: #555; /* Couleur de fond initiale */
+    margin: 2px 0;
+    cursor: pointer;
+    transition: background-color 0.3s; /* Transition douce pour le changement de couleur */
+}
+
+.file:hover {
+    background-color: #777; /* Couleur de fond au survol */
+}
+
+#editor {
+    flex-grow: 1;
+    background-color: #1E1E1E;
+    padding: 0;
+}
+
+#editor-toolbar {
+    display: flex;
+    flex-grow: 1;
+    margin-bottom: 20px;
+    height: 5%;
+    background-color: #555;
+    justify-content: space-around;
+}
+
+.button-top {
+    background-color: #007ACC;
+    color: white;
+    padding: 10px;
+    width: 15%;
+    height: 90%;
+    border: none;
+    cursor: pointer;
+    margin: 2px;
+}
+
+.button-side {
+    background-color: #007ACC;
+    color: white;
+    padding: 10px;
+    
+    border: none;
+    cursor: pointer;
+    margin: 2px;
+}
+
+.button-top:hover, .button-side:hover {
+    background-color: #005EA2;
+}
+
+#code-editor {
+    width: 100%;
+    height: calc(100% - 100px);
+    background-color: #1E1E1E;
+    color: #D4D4D4;
+    border: none;
+    resize: none;
+    outline: none;
+}
+
+#back-button {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    padding: 10px;
+    background-color: #666;
+    color: white;
+    cursor: pointer;
+}
+
+#back-button:hover {
+    background-color: #444;
+}
+
+
+.java-code {
+    color: #f75b5b; /* Rouge */
+}
+
+.c-code {
+    color: #5b5bf7; /* Bleu */
+}
+
+.python-code {
+    color: #f7d85b; /* Jaune */
+}
+
+#code-editor {
+    /* styles existants */
+    color: #D4D4D4; /* Couleur par défaut */
+}
