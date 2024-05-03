@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Éditeur de Code</title>
+    <link rel="stylesheet" href="code.css">
+</head>
+<body>
+    <div id="container">
+        <aside id="sidebar">
+            <button class="button-side" id="new-file">Nouveau Fichier</button>
+            <button class="button-side" id="new-folder">Nouveau Dossier</button>
+            <div class="folder">
+                <span class="folder-name">DOSSIER1</span>
+                <div class="files hidden">
+                    <div class="file">FICHIER_1</div>
+                    <div class="file">FICHIER_2</div>
+                    <div class="file">FICHIER_3</div>
+                    <div class="file">FICHIER_4</div>
+                </div>
+            </div>
+            <div class="folder">
+                <span class="folder-name">DOSSIER2</span>
+                <div class="files hidden">
+                    <div class="file">FICHIER_1</div>
+                    <div class="file">FICHIER_2</div>
+                </div>
+            </div>
+        </aside>
+        <main id="editor">
+            <div id="editor-toolbar">
+                <button class="button-top" id="save-btn">SAVE</button>
+                <button class="button-top" id="c-lang">C</button>
+                <button class="button-top" id="java-lang">JAVA</button>
+                <button class="button-top" id="python-lang">PYTHON</button>
+
+            </div>
+            <textarea id="code-editor" placeholder="Éditez votre code ici..."></textarea>
+        </main>
+    </div>
+    <button id="back-button">Retour</button>
+    <script src="code.js"></script>
+</body>
+</html>
