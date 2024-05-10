@@ -1,0 +1,51 @@
+/* New style to split the page into two parts */
+.container {
+    display: flex;
+    flex-direction: row; /* Change la direction de la flexbox en colonne */
+    height: 100vh;
+}
+
+/* Nouveau style pour la barre de gauche */
+.sidebar {
+    flex: 0 0 250px;
+    background-color: #1e1e1e;
+    color: #ffffff;
+    overflow-y: auto;
+}
+
+.sidebar-header {
+    padding: 10px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-bottom: 1px solid #333333;
+}
+
+.file-explorer {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 10px;
+}
+
+.file-explorer > li {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.file-explorer > li:hover {
+    background-color: #333333;
+}
+
+.file-explorer i {
+    margin-right: 5px;
+}
+
+/* Style pour les dossiers rétractables */
+.folder > ul {
+    display: none; /* Masquer les sous-dossiers par défaut */
+}
+
+
+.editor-container {
+    flex: 1; /* Takes up all remaining space */
+    padding: 20px;
+}

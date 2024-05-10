@@ -1,3 +1,4 @@
+
 // Cette fonction permet de basculer la visibilité des fichiers dans un dossier
 function toggleFolder(folderElement) {
     // Trouve le conteneur de fichiers le plus proche
@@ -25,58 +26,19 @@ document.querySelectorAll('.folder-name').forEach(function(folderName) {
     });
 });
 
-// La délégation des événements permet d'attacher des écouteurs d'événements aux fichiers, même s'ils sont ajoutés dynamiquement
-document.getElementById('file-explorer').addEventListener('click', function(event) {
-    if (event.target.classList.contains('file')) {
-        selectFile(event);
-    }
-});
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Attache les événements de clic pour les dossiers
-    document.querySelectorAll('.folder-name').forEach(function(folderName) {
-        folderName.addEventListener('click', function() {
-            console.log('Dossier cliqué:', this.textContent);
-            var filesList = this.nextElementSibling;
-            console.log('État avant le clic:', filesList.classList.contains('hidden'));
-            filesList.classList.toggle('hidden');
-            console.log('État après le clic:', filesList.classList.contains('hidden'));
-        });
-        
+
+// Configuration pour charger les fichiers nécessaires de Monaco Editor
+require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.27.0/min/vs' }});
+require(['vs/editor/editor.main'], function () {
+    // Créer l'éditeur de code dans la balise <div> avec l'ID "editor"
+    var editor = monaco.editor.create(document.getElementById('editor'), {
+        value: [
+            'function x() {',
+            '\tconsole.log("Hello, world!");',
+            '}'
+        ].join('\n'),
+        language: 'java', // Définir le langage du code (javascript, python, etc.)
+        theme: 'vs-dark' // Définir le thème de l'éditeur (vs, vs-dark, etc.)
     });
 });
-
-
-// script.js
-document.addEventListener('DOMContentLoaded', function() {
-    // Vérifier si l'élément existe avant de tenter d'ajouter un écouteur d'événements
-    const cLangButton = document.getElementById('c-lang');
-    if(cLangButton) {
-        cLangButton.addEventListener('click', function() {
-            document.getElementById('code-editor').style.color = 'blue';
-        });
-    } else {
-        console.log('Element with id "c-lang" not found');
-    }
-
-    const javaLangButton = document.getElementById('java-lang');
-    if(javaLangButton) {
-        javaLangButton.addEventListener('click', function() {
-            document.getElementById('code-editor').style.color = 'red';
-        });
-    } else {
-        console.log('Element with id "java-lang" not found');
-    }
-
-    const pytohnLangButton = document.getElementById('python-lang');
-    if(pytohnLangButton) {
-        pytohnLangButton.addEventListener('click', function() {
-            document.getElementById('code-editor').style.color = 'green';
-        });
-    } else {
-        console.log('Element with id "python-lang" not found');
-    }
-
-    // Répéter pour les autres boutons...
-});
-
