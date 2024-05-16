@@ -1,0 +1,4 @@
+Street: <input type="text" id="Street"><br>
+City:   <input type="text" id="City"><br>
+<br>
+<input type="button" id="BTValAddAddress" value="OK">

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<body>
+
+<div ng-app="myApp" ng-controller="myCtrl"> 
+
+<button ng-click="doClick('addPerson')">Add person</button>
+<button ng-click="doClick('addAddress')">Add address</button>
+<button ng-click="doClick('associate')">Associate</button>
+<button ng-click="doClick('list')">List</button>
+<br>
+    <div ng-show="showAddPerson">
+		<form novalidate>
+    		First Name: <input type="text" ng-model="person.firstName"><br>
+    		Last Name:  <input type="text" ng-model="person.lastName"><br>
+    		<br>
+    		<button ng-click="doOK('addPerson')">OK</button>
+  		</form>
+    </div>
+    <div ng-show="showAddAddress">
+		<form novalidate>
+    		Street: <input type="text" ng-model="address.street"><br>
+    		City:   <input type="text" ng-model="address.city"><br>
+    		<br>
+    		<button ng-click="doOK('addAddress')">OK</button>
+  		</form>
+    </div>
+    <div ng-show="showAssociate">
+    	<form>
+		Select a person :<br>
+			<label ng-repeat="p in listPersons">
+				<input type="radio" ng-model="$parent.onePerson" value="{{p.id}}">{{p.firstName}} {{p.lastName}}<br>
+			</label>
+		</form>
+		<br>
+		<form>
+		Select an address :<br>
+			<label ng-repeat="a in listAddresses">
+				<input type="radio" ng-model="$parent.oneAddress" value="{{a.id}}">{{a.street}} {{a.city}}<br>
+			</label>
+		</form>
+		<br>
+		<button ng-click="doOK('associate')">OK</button>
+    </div>
+    <div ng-show="showList">
+    <ul>
+    	<li ng-repeat="p in listPersons">{{ p.firstName }} {{ p.lastName }} 
+    		<ul>
+    			<li ng-repeat="a in p.addresses">{{ a.street }} {{ a.city }} 
+    			</li>
+    		</ul>
+    	</li>
+  	</ul>
+    </div>
+    <div ng-show="showMessage">
+    {{message}}
+    </div>
+    
+</div>
+
+<script>
+
+function initVars(scope) {
+	scope.person = new Object();
+	scope.address = new Object();
+	scope.onePerson = "";
+	scope.oneAddress = "";
+	scope.message = "";
+}
+function initView(scope) {
+	scope.showAddPerson = false;
+	scope.showAddAddress = false;
+	scope.showAssociate = false;
+	scope.showList = false;
+	scope.showAssociate = false;
+	scope.showMessage = false;
+	scope.showList = false;
+}
+function click(button, scope, http) {
+	initView(scope);
+	initVars(scope);
+	switch (button) {
+		case "addPerson" :
+			scope.showAddPerson = true;
+			break;
+		case "addAddress" :
+			scope.showAddAddress = true;
+			break;
+		case "associate" :
+			scope.message = "";
+			http.get("rest/listpersons").then(function(response) {
+				if (response.status == 200) {
+					scope.listPersons = response.data;
+					//alert(JSON.stringify(scope.listPersons));
+					http.get("rest/listaddresses").then(function(response) {
+						if (response.status == 200) {
+							scope.listAddresses = response.data;
+							scope.showAssociate = true;
+							//alert(JSON.stringify(scope.listAddresses));
+						} else {
+							scope.message += "failed to get list of addresses<br>";
+							scope.showMessage = true;
+						}
+					});	
+				} else {
+					scope.message += "failed to get list of persons<br>";
+					scope.showMessage = true;
+				}
+			});
+			break;
+		case "list" :
+			http.get("rest/listpersons").then(function(response) {
+				if (response.status == 200) {
+					scope.listPersons = response.data;
+					scope.showList = true;
+					//alert(JSON.stringify(scope.listPersons));
+				} else {
+					scope.message = "failed to get list of persons";
+					scope.showMessage = true;
+				}
+			});
+			break;
+	}
+}
+function OK(action, scope, http) {
+	initView(scope);
+	switch (action) {
+	case "addPerson" :
+		http.post("rest/addperson",scope.person).then(function(response) {
+			if (response.status == 204) scope.message = "person was added";
+			else scope.message = "failed to add a person";
+			scope.showMessage = true;			
+		});
+		break;
+	case "addAddress" :
+		http.post("rest/addaddress",scope.address,[]).then(function(response) {
+			if (response.status == 204) scope.message = "address was added";
+			else scope.message = "failed to add an address";
+			scope.showMessage = true;			
+		});
+		break;
+	case "associate" :
+		var ass = new Object();		
+		ass.personId = scope.onePerson;
+		ass.addressId = scope.oneAddress;		
+		http.post("rest/associate",ass).then(function(response) {
+			if (response.status == 204) scope.message = "association was created";
+			else scope.message = "failed to create association";
+			scope.showMessage = true;			
+		});
+		break;
+	}
+}
+
+var app = angular.module('myApp', []);
+app.controller('myCtrl', function($scope,$http) {
+	initVars($scope);
+ 	initView($scope);
+    $scope.doClick=function(button) {click(button,$scope,$http);}
+    $scope.doOK=function(action) {OK(action,$scope,$http);}
+});
+
+</script>
+
+</body>
+</html>

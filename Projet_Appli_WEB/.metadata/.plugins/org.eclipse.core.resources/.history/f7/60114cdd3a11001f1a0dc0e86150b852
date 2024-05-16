@@ -1,0 +1,86 @@
+package pack;
+
+import java.util.Collection;
+
+import javax.ejb.Singleton;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+@Singleton
+@Path("/")
+public class Facade {
+
+	@PersistenceContext
+	EntityManager em;
+	
+	@POST
+	@Path("/test")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String traiterConnexion(Person person) {
+        // Ici, vous pouvez traiter les données de connexion reçues dans l'objet Person
+        
+        // Supposons que vous souhaitiez vérifier le prénom et le nom pour la connexion
+        boolean connexionReussie = verifierInformationsConnexion(person.getFirstName(), person.getLastName());
+        
+        if (connexionReussie) {
+            return "Connexion réussie!";
+        } else {
+            return "Nom d'utilisateur ou mot de passe incorrect.";
+        }
+    }
+
+    // Méthode factice pour vérifier les informations d'identification
+    private boolean verifierInformationsConnexion(String firstName, String lastName) {
+        // Code pour vérifier les informations d'identification dans votre système de sécurité
+        // Cette méthode pourrait interroger une base de données, un service d'authentification, etc.
+        // Dans cet exemple, nous supposons une vérification factice.
+        return firstName.equals("utilisateur") && lastName.equals("motdepasse");
+    }
+		
+	
+	@POST
+	@Path("/addperson")
+    @Consumes({ "application/json" })
+	public void addPerson(Person p) {
+		System.out.println("coucou");
+		em.persist(p);
+	}
+	
+	@POST
+	@Path("/addaddress")
+    @Consumes({ "application/json" })
+	public void addAddress(Address a) {
+		em.persist(a);
+	}
+	
+	@GET
+	@Path("/listpersons")
+    @Produces({ "application/json" })
+	public Collection<Person> listPersons() {
+		return em.createQuery("from Person", Person.class).getResultList();
+	}
+	
+	@GET
+	@Path("/listaddresses")
+    @Produces({ "application/json" })
+	public Collection<Address> listAddress() {
+		return em.createQuery("from Address", Address.class).getResultList();	
+	}
+	
+	@POST
+	@Path("/associate")
+    @Consumes({ "application/json" })
+	public void associate(Association as) {
+		System.out.println(as.getPersonId() +" "+ as.getAddressId());
+		Person p = em.find(Person.class, as.getPersonId());
+		Address a = em.find(Address.class, as.getAddressId());
+		a.setOwner(p);
+	}
+	
+}

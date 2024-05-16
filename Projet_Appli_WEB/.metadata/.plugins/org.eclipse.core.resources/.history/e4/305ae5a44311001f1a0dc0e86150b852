@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+<body>
+	<div ng-app="loginApp" ng-controller="LoginController">
+    <div class="video-background">
+
+        <div class="overlay"></div> 
+    </div>
+
+    <div class="login-container">
+        <h2>Bienvenue</h2>
+        <form id="login-form" ng-submit="submitForm()">
+            <div class="form-group">
+                <label for="firstName">Prénom</label>
+                <input type="text" id="firstName" name="firstName" ng-model="formData.firstName" required>
+            </div>
+            <div class="form-group">
+                <label for="lastName">Nom</label>
+                <input type="text" id="lastName" name="lastName" ng-model="formData.lastName" required>
+            </div>
+            <button type="submit" class="login-button">Valider</button>
+        </form>
+        <div ng-show="response">{{ response }}</div>
+    </div>
+
+    <script src="login.js"></script>
+</body>
+</html>

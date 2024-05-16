@@ -1,0 +1,5 @@
+<input type="button" id="BTAddPerson" value="Add personne">
+<input type="button" id="BTAddAddress" value="Add address">
+<input type="button" id="BTAssociate" value="Associate">
+<input type="button" id="BTList" value="List">
+<br>

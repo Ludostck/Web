@@ -1,0 +1,8 @@
+Select a person :<br>
+<div id="ListOfPersons">
+</div>
+<br>
+Select an address :<br>
+<div id="ListOfAddresses">
+</div>
+<input type="button" id="BTValAssociate" value="OK">

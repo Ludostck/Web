@@ -1,0 +1,9 @@
+INDEX VERSION 1.4+C:\Users\Eliott\Desktop\Projet_Appli_WEB\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+3483086818.index
+3441835631.index
+3391986683.index
+1706982848.index
+1770673845.index
+1534964654.index
+2914847919.index
+3483086818.index

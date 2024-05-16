@@ -1,0 +1,14 @@
+var app = angular.module('loginApp', []);
+
+app.controller('LoginController', function($scope, $http) {
+    $scope.formData = {};
+
+    $scope.submitForm = function() {
+        $http.post('/test', $scope.formData)
+            .then(function(response) {
+                $scope.response = response.data;
+            }, function(error) {
+                $scope.response = "Erreur : " + error.statusText;
+            });
+    };
+});

@@ -1,0 +1,4 @@
+First Name: <input type="text" id="FirstName"><br>
+Last Name:  <input type="text" id="LastName"><br>
+<br>
+<input type="button" id="BTValAddPerson" value="OK">

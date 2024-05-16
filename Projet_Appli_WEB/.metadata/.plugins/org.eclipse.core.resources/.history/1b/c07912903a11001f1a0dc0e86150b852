@@ -1,0 +1,21 @@
+// Définition du module AngularJS
+var app = angular.module('loginApp', []);
+
+// Définition du contrôleur
+app.controller('LoginController', function($scope, $http) {
+    // Initialisation des données du formulaire
+    $scope.formData = {};
+
+    // Fonction pour soumettre le formulaire
+    $scope.submitForm = function() {
+        // Envoi de la requête POST au serveur
+        $http.post('/rest/test', $scope.formData)
+            .then(function(response) {
+                // Succès : affichage de la réponse du serveur
+                $scope.response = response.data;
+            }, function(error) {
+                // Erreur : affichage de l'erreur
+                $scope.response = "Erreur : " + error.statusText;
+            });
+    };
+});
