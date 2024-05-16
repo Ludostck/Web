@@ -1,15 +1,17 @@
 package pack;
 
 import java.util.Collection;
+import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
-import pack.Person;
+import pack.User;
 
 @Entity
 public class Analyse {
@@ -18,7 +20,7 @@ public class Analyse {
     @GeneratedValue(strategy=GenerationType.AUTO)  
 	int id;
     @ManyToOne
-	Person user;
+	User user;
     Date beginTime;
     Date endTime;
     int actions;
@@ -33,32 +35,32 @@ public class Analyse {
 		this.id = id;
 	}
 
-	public String getUser() {
-		return lastcolor;
+	public User getUser() {
+		return user;
 	}
 
-	public void setUser(Person user) {
+	public void setUser(User user) {
 		this.user = user;
 	}
 
-    public String getBeginTime() {
-		return creationDate;
+    public Date getBeginTime() {
+		return beginTime;
 	}
 
 	public void setBeginTime(Date date) {
-		this.creationDate = date;
+		this.beginTime = date;
 	}
 
-    public String getEndTime() {
-		return creationDate;
+    public Date getEndTime() {
+		return endTime;
 	}
 
 	public void setEndTime(Date date) {
-		this.creationDate = date;
+		this.endTime = date;
 	}
 
 
-    public String getActions() {
+    public int getActions() {
 		return actions;
 	}
 
@@ -66,7 +68,7 @@ public class Analyse {
 		this.actions = actions;
 	}
 
-    public String getErrors() {
+    public int getErrors() {
 		return actions;
 	}
 

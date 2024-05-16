@@ -4,7 +4,7 @@ app.controller('LoginController', function($scope, $http) {
     $scope.formData = {};
 
     $scope.submitForm = function() {
-        $http.post("rest/test", $scope.formData)
+        $http.post("rest/login", $scope.formData)
             .then(function(response) {
                 $scope.response = response.data;
             }, function(error) {

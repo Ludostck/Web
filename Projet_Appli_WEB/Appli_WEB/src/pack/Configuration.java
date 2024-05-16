@@ -7,9 +7,10 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
-import pack.Person;
+import pack.User;
 
 @Entity
 public class Configuration {
@@ -19,7 +20,7 @@ public class Configuration {
 	int id;
 	String color;
     @ManyToOne
-	Person user;
+	User user;
 	
 
 	public int getId() {
@@ -38,11 +39,11 @@ public class Configuration {
 		this.color = color;
 	}
 
-	public String getUser() {
-		return lastcolor;
+	public User getUser() {
+		return user;
 	}
 
-	public void setUser(Person user) {
+	public void setUser(User user) {
 		this.user = user;
 	}
 

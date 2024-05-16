@@ -1,14 +1,16 @@
 package pack;
 import java.util.Collection;
+import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
-import pack.Person;
+import pack.User;
 
 @Entity
 public class Projet {
@@ -20,7 +22,7 @@ public class Projet {
 	String description;
     Date creationDate;
     @ManyToOne
-    Person owner;
+    User owner;
 
 
 	public int getId() {
@@ -47,19 +49,19 @@ public class Projet {
 		this.description = description;
 	}
 
-    public String getDate() {
-		return creationDate;
+    public Date getDate() {
+		return this.creationDate;
 	}
 
 	public void setDate(Date date) {
 		this.creationDate = date;
 	}
 
-	public Person getOwner() {
+	public User getOwner() {
 		return owner;
 	}
 
-	public void setOwner(Person person) {
+	public void setOwner(User person) {
 		this.owner = person;
 	}
 
