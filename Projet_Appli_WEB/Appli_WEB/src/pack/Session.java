@@ -4,6 +4,8 @@ import java.util.Date;
 
 import javax.persistence.*;;
 
+
+@Entity
 public class Session {
 	
 	@Id
