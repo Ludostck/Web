@@ -24,6 +24,11 @@ public class Dossier {
 	public Dossier() {}
 
 	
+	public long getId() {
+		return this.id;
+	}
+	
+	
 	public void setNom(String nom) {
 		this.nom = nom;
 	}
