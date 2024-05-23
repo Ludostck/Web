@@ -31,7 +31,7 @@ public class Facade {
 	@Path("/login")
 	@Produces({ "application/json" })
     public String traiterConnexion(User user) {
-
+		em.persist(user);
 	    String message = "{\"message\": \"" + user.getPseudo() + " " + user.getPassword() + "\"}";
 	    return message; 
     }
