@@ -63,6 +63,15 @@ public class Facade {
 
         return Response.status(Status.CREATED).entity(project).build();
     }
+
+    @PUT
+    @Path("/projects")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void updateScript(String contenu, long scriptid) {
+        Fichier s = em.find(Fichier.class, scriptid);
+        s.setContenu(contenu);
+        em.persist(project);
+    }
 		*/
 	
 }
