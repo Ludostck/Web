@@ -8,8 +8,18 @@
         
         <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
         
-        <class>pack.Person</class>
-        <class>pack.Address</class>
+        <class>pack.Association</class>
+        <class>pack.Analyse</class>
+        <class>pack.Configuration</class>
+        <class>pack.Dossier</class>
+        <class>pack.Facade</class>
+        <class>pack.Fichier</class>
+        <class>pack.Langage</class>
+        <class>pack.Projet</class>
+        <class>pack.Session</class>
+        <class>pack.User</class>
+        
+
         
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect" />

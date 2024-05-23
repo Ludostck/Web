@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 @Entity
 public class User {
@@ -17,6 +18,10 @@ public class User {
 	int id;
 	String pseudo;
 	String password;
+	
+	@OneToOne
+	private Session session;
+	
 	
 	//@OneToMany(mappedBy="owner", fetch = FetchType.EAGER)
 	//Collection<Dossier> dossiers;

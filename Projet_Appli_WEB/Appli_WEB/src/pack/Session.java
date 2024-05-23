@@ -1,5 +1,6 @@
 package pack;
 
+import java.util.Collection;
 import java.util.Date;
 
 import javax.persistence.*;;
@@ -17,7 +18,7 @@ public class Session {
 	private Date heure_fin;
 	
 	@OneToMany
-	private Projet projet;
+	private Collection<Projet> projets;
 
 	@ManyToOne
 	private User user;
@@ -44,12 +45,12 @@ public class Session {
 		this.heure_fin = heure_fin;
 	}
 
-	public Projet getProjet() {
-		return projet;
+	public Collection<Projet> getProjet() {
+		return projets;
 	}
 
-	public void setProjet(Projet projet) {
-		this.projet = projet;
+	public void setProjet(Collection<Projet> projet) {
+		this.projets = projet;
 	}
 
 	public User getUser() {
