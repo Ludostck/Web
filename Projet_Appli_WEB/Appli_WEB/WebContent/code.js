@@ -1,4 +1,3 @@
-
 // Cette fonction permet de basculer la visibilité des fichiers dans un dossier
 function toggleFolder(folderElement) {
     // Trouve le conteneur de fichiers le plus proche
@@ -25,8 +24,6 @@ document.querySelectorAll('.folder-name').forEach(function(folderName) {
         toggleFolder(folderName.parentElement);
     });
 });
-
-
 
 // Configuration pour charger les fichiers nécessaires de Monaco Editor
 require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.27.0/min/vs' }});

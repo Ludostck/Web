@@ -18,6 +18,17 @@
     <div id="new-project-button" class="new-project-button">
         <img src="plus2.png" alt="Ajouter"> <span>NOUVEAU PROJET</span>
     </div> 
+
+    <!-- Modal pour la création d'un nouveau projet -->
+    <div id="new-project-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Nouveau Projet</h2>
+            <input type="text" id="new-project-name" placeholder="Nom du projet">
+            <button id="create-project-btn">Créer</button>
+        </div>
+    </div>
+
     <script src="projects.js"></script>
 </body>
 </html>

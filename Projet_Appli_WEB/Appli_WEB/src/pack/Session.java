@@ -4,6 +4,9 @@ import java.util.Date;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import java.util.List;
 
@@ -19,13 +22,14 @@ public class Session {
     @Temporal(TemporalType.TIMESTAMP)
     private Date heureFin;
 
-    @OneToOne(mappedBy = "session", fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Projet> projets;
-
-    // getters and setters
+    
 
     public Long getId() {
         return id;

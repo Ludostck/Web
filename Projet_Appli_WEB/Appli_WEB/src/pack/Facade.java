@@ -6,8 +6,12 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.transaction.Transactional;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 @Singleton
@@ -77,15 +81,17 @@ public class Facade {
     @GET
     @Path("/projects")
     @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
     public Response getUserProjects(@QueryParam("pseudo") String pseudo) {
         LOGGER.info("Received request to get projects for pseudo: " + pseudo);
         try {
+            // Récupération de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
                           .getSingleResult();
             LOGGER.info("Found user: " + user.getPseudo() + " with ID: " + user.getId());
 
-            // Assurez-vous que la session est correctement liée à l'utilisateur
+            // Récupération de la session de l'utilisateur
             Session session = user.getSession();
             if (session == null) {
                 LOGGER.warning("No session found for user: " + user.getPseudo());
@@ -95,7 +101,19 @@ public class Facade {
             }
             LOGGER.info("Found session for user: " + user.getPseudo() + " with session ID: " + session.getId());
 
-            Collection<Projet> projects = session.getProjets();
+            // Forcer l'initialisation des projets et fichiers
+            session.getProjets().forEach(projet -> {
+                LOGGER.info("Initializing project: " + projet.getTitle() + " with ID: " + projet.getId());
+                if (projet.getFichiers() == null) {
+                    LOGGER.info("Project " + projet.getTitle() + " has no files, initializing empty list.");
+                    projet.setFichiers(new ArrayList<>());
+                } else {
+                    LOGGER.info("Project " + projet.getTitle() + " has " + projet.getFichiers().size() + " files.");
+                    projet.getFichiers().size(); // Forcer l'initialisation des fichiers
+                }
+            });
+
+            List<Projet> projects = session.getProjets();
             LOGGER.info("Number of projects found: " + projects.size());
             return Response.ok(projects).build();
         } catch (NoResultException e) {
@@ -112,39 +130,55 @@ public class Facade {
     }
 
 
+
+    
     @POST
     @Path("/projects")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response addNewProject(@QueryParam("pseudo") String pseudo, Projet newProject) {
+    public Response createProject(Map<String, String> requestData) {
+        String pseudo = requestData.get("pseudo");
+        String projectName = requestData.get("projectName");
+
         try {
-            LOGGER.info("Adding new project for pseudo: " + pseudo);
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
                           .getSingleResult();
-            LOGGER.info("Found user: " + user.getPseudo());
 
-            Session session = em.createQuery("SELECT s FROM Session s WHERE s.user = :user", Session.class)
-                                .setParameter("user", user)
-                                .getSingleResult();
-            LOGGER.info("Found session for user: " + user.getPseudo());
+            Session session = user.getSession();
+            if (session == null) {
+                session = new Session();
+                session.setUser(user);
+                session.setHeureDebut(new Date());
+                em.persist(session);
+                user.setSession(session);
+                em.merge(user);
+            }
 
+            Projet newProject = new Projet();
+            newProject.setTitle(projectName);
             newProject.setOwner(session);
-            em.persist(newProject);
+
             session.getProjets().add(newProject);
+
+            em.persist(newProject);
             em.merge(session);
 
-            LOGGER.info("Project added successfully for pseudo: " + pseudo);
-            return Response.ok("{\"success\": true, \"message\": \"Projet ajouté avec succès\"}").build();
+            return Response.ok("{\"success\": true}").build();
         } catch (NoResultException e) {
-            LOGGER.warning("User or session not found for pseudo: " + pseudo);
             return Response.status(Response.Status.NOT_FOUND)
-                           .entity("{\"success\": false, \"message\": \"Utilisateur ou session non trouvés.\"}")
+                           .entity("{\"error\": \"User not found.\"}")
                            .build();
         } catch (Exception e) {
-            LOGGER.severe("Error adding project for pseudo: " + pseudo + " - " + e.getMessage());
-            return Response.status(Response.Status.BAD_REQUEST).entity("{\"success\": false, \"message\": \"Erreur lors de l'ajout du projet\"}").build();
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("{\"error\": \"Unable to create project.\"}")
+                           .build();
         }
     }
+
+
+
+
+
 }
