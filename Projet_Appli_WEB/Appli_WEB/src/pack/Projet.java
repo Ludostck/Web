@@ -24,7 +24,19 @@ public class Projet {
     @ManyToOne
     User owner;
 
+	@OneToMany
+	private Collection<Dossier> dossiers;
 
+	
+	public Collection<Dossier> getDossiers() {
+		return dossiers;
+	}
+	
+	public void setDossiers(Collection<Dossier> dossiers) {
+		this.dossiers = dossiers;
+	}
+	
+	
 	public int getId() {
 		return id;
 	}

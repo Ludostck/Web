@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.persistence.*;
 
+@Entity
 public class Dossier {
 	
 	@Id
@@ -63,5 +64,8 @@ public class Dossier {
 	public List<Fichier> getFichiers(){
 		return this.fichiers;
 	}
-	
+
+	public void setFichiers(List<Fichier> fichiers){
+		this.fichiers = fichiers;
+	}
 }
