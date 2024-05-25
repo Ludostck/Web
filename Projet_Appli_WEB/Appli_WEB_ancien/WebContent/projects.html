@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projets</title>
+    <link rel="stylesheet" href="projects.css">
+</head>
+<body>
+    <div id="back-button" class="back-button">&larr; Retour</div>
+    <div class="video-background">
+        <video playsinline autoplay muted loop id="bg-video">
+            <source src="fond2.webm" type="video/webm">
+        </video>
+    </div>
+    
+    <div class="projects-grid">
+        <div class="project" onclick="shrink(this)">
+            <div class="project-title">
+                <h3>PROJET 1</h3>
+            </div>
+            <div class="file-container">
+                <div class="file">
+                    <img src="c_icon.png" alt="C"> <span>FICHIER_1.c</span>
+                </div>
+                <div class="file">
+                    <img src="java_icon.png" alt="Java"> <span>FICHIER_2.java</span>
+                </div>
+                <div class="file">
+                    <img src="python_icon.png" alt="Python"> <span>FICHIER_3.py</span>
+                </div>
+            </div>
+        </div>
+        <div class="project" onclick="shrink(this)">
+            <div class="project-title">
+                <h3>PROJET 2</h3>
+            </div>
+            <div class="file-container">
+                <div class="file">
+                    <img src="c_icon.png" alt="C"> <span>FICHIER_1.c</span>
+                </div>
+                <div class="file">
+                    <img src="java_icon.png" alt="Java"> <span>FICHIER_2.java</span>
+                </div>
+                <div class="file">
+                    <img src="python_icon.png" alt="Python"> <span>FICHIER_3.py</span>
+                </div>
+            </div>
+        </div>
+        <div class="project" onclick="shrink(this)">
+            <div class="project-title">
+                <h3>PROJET 3</h3>
+            </div>
+            <div class="file-container">
+                <div class="file">
+                    <img src="c_icon.png" alt="C"> <span>FICHIER_1.c</span>
+                </div>
+                <div class="file">
+                    <img src="python_icon.png" alt="Python"> <span>FICHIER_3.py</span>
+                </div>
+            </div>
+        </div>
+        <div class="project" onclick="shrink(this)">
+            <div class="project-title">
+                <h3>PROJET 4</h3>
+            </div>
+            <div class="file-container">
+                <div class="file">
+                    <img src="c_icon.png" alt="C"> <span>FICHIER_1.c</span>
+                </div>
+                <div class="file">
+                    <img src="java_icon.png" alt="Java"> <span>FICHIER_2.java</span>
+                </div>
+                <div class="file">
+                    <img src="python_icon.png" alt="Python"> <span>FICHIER_3.py</span>
+                </div>
+                
+            </div>
+            <div class="more-files-indicator">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+        </div>
+        <div class="project" onclick="shrink(this)">
+            <div class="project-title">
+                <h3>PROJET 5</h3>
+            </div>
+            <div class="file-container">
+                <div class="file">
+                    <img src="c_icon.png" alt="C"> <span>FICHIER_1.c</span>
+                </div>
+                <div class="file">
+                    <img src="java_icon.png" alt="Java"> <span>FICHIER_2.java</span>
+                </div>
+                <div class="file">
+                    <img src="python_icon.png" alt="Python"> <span>FICHIER_3.py</span>
+                </div>
+                
+            </div>
+            <div class="more-files-indicator">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+        </div>
+        <div class="project" onclick="shrink(this)">
+            <div class="project-title">
+                <h3>PROJET 6</h3>
+            </div>
+            <div class="file-container">
+                <div class="file">
+                    <img src="c_icon.png" alt="C"> <span>FICHIER_1.c</span>
+                </div>
+                <div class="file">
+                    <img src="java_icon.png" alt="Java"> <span>FICHIER_2.java</span>
+                </div>
+            </div>
+        </div>
+      
+        
+        <!-- Répéter pour d'autres projets... -->
+        <!-- Projets vides avec l'étoile -->
+        <div class="project empty">
+            <span class="star">&#9734;</span>
+        </div>
+        <div class="project empty">
+            <span class="star">&#9734;</span>
+        </div>
+        <!-- Répétez pour les autres emplacements vides si nécessaire -->
+    </div>
+    <div id="new-project-button" class="new-project-button">
+        <div class="title-project-button">
+            <div class="file-button">
+                <img src="plus2.png" alt="Java"> <span>NOUVEAU PROJET</span>
+            </div>
+        </div>
+    </div>    
+    <script src="projects.js"></script>
+</body>
+</html>
