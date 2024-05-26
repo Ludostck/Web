@@ -1,292 +1,143 @@
-body, html {
-    margin: 0;
-    height: 100%;
+/* Applique une couleur de fond globale */
+html, body {
     font-family: Arial, sans-serif;
-    justify-content: center;
+    background-color: #121212; /* Fond noir */
+    color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+    height: 100%; /* Assure que le fond couvre toute la hauteur */
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    text-align: center;
+    padding: 1rem;
+    background-color: #1a1a1a;
+    width: 100%; /* Assure que l'en-t�te occupe toute la largeur */
 }
 
-.video-background {
-    
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    overflow: hidden;
-}
-
-.video-background video {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    min-width: 100%;
-    min-height: 100%;
-    width: auto;
-    height: auto;
-    transform: translate(-50%, -50%);
-}
-
-.back-button {
-    background-color: rgba(159, 163, 250, 0.8); /* Légèrement transparent */
-    border-radius: 8px; /* Bords arrondis */
-    margin: 10px;
-    cursor: pointer;
-    user-select: none;
-    width: 150px;
-    z-index: 1;
-    
-}
-
-
-
-.projects-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 20px;
-    padding: 20px;
-    align-items: start; /* Assure que les éléments s'alignent au haut */
-}
-
-.project {
-    background-color: rgba(59, 63, 169, 0.9); /* Légèrement transparent */
-    border-radius: 10px; /* Bords arrondis */
-    width: 300px; 
-    height: 300px; 
-    margin: auto; 
-    transition: transform 0.3s;
-    cursor: pointer;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column; /* Pour structurer verticalement les titres et les fichiers */
-}
-
-.project-title {
-    background-color: #818AC2; /* Transparence avec une teinte de bleu */
-    border-radius: 8px; /* Bords arrondis */
-    margin: 10px; 
-    padding: 10px;
-    flex-grow: 1; /* Permet aux éléments de remplir l'espace */
-    display: flex;
-    justify-content: center; /* Centre horizontalement */
-    align-items: center; /* Centre verticalement */
-    flex-grow: 0; /* Empêche le titre de grandir et prendre plus d'espace que nécessaire */
-    margin: 0; /* Assurez-vous de ne pas avoir de marge qui décale le texte */
-    height: 50px; /* Vous pouvez ajuster cette valeur selon la hauteur souhaitée */
-}
-/* Styles pour le modal */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.4);
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-}
-
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
+.user-pseudo {
+    font-size: 1.5rem;
     font-weight: bold;
 }
 
-.close:hover,
-.close:focus {
-    color: black;
+.back-button {
+    color: #f0f0f0;
     text-decoration: none;
     cursor: pointer;
+    background-color: #3a3a3a; /* Ajout d'un fond */
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
 }
 
-
-
-.project h3 {
-    margin: 0; /* Enlève la marge par défaut du titre h3 pour un centrage précis */
+main {
+    padding: 2rem;
+    background-color: #121212; /* Assure que le fond est noir */
+    min-height: calc(100vh - 70px); /* Ajuste la hauteur minimum pour couvrir l'espace sous l'en-t�te */
 }
 
-.project-title {
-    flex-grow: 0; /* Empêche le titre de grandir */
-    margin-bottom: 10px; /* Espace entre le titre et les fichiers */
+.controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.control-button {
+    background-color: #1a73e8;
+    color: #f0f0f0;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.3s ease;
+}
+
+.control-button:hover {
+    background-color: #185abc;
+}
+
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.project {
+    background-color: #282828;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.project:hover {
+    transform: scale(1.05);
+}
+
+.project-title h3 {
+    margin: 0 0 1rem;
 }
 
 .file-container {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 0.5rem;
 }
 
 .file {
-    background-color: rgba(0, 222, 255, 0.5); /* Couleur de fond pour les layers de fichier */
-    border-radius: 6px; /* Bords arrondis pour les layers de fichier */
-    margin: 5px 10px; /* Marge autour des layers de fichier */
-    padding: 5px; /* Padding à l'intérieur des layers de fichier */
-    display: flex;
-    align-items: center;
+    background-color: #3a3a3a;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
 }
 
-.file-button {
-    border-radius: 6px; /* Bords arrondis pour les layers de fichier */
-    display: flex;
-    align-items: center;
-}
-
-
-
-.file img {
-    width: 24px; /* Taille des icônes des fichiers */
-    margin-right: 10px;
-}
-.file-button img {
-    width: 24px; /* Taille des icônes des fichiers */
-    margin-right: 10px;
-}
-
-.more-files-indicator {
-    text-align: center; /* Centre l'indicateur horizontalement */
-    padding: 0px;
-}
-
-.dot {
-    height: 5px;
-    width: 5px;
-    background-color: #fff; /* Couleur blanche pour les points */
-    border-radius: 50%; /* Rend les points circulaires */
-    display: inline-block;
-    margin: 0 2px; /* Espace entre les points */
-}
-
-.project.empty {
-    background-color: rgba(59, 63, 69, 0.5); /* Plus transparent que les autres projets */
-    justify-content: center;
-    align-items: center;
-}
-
-
-
-/* Style when project is clicked */
-.clicked {
-    transform: scale(0.96); /* Léger rétrécissement */
-    transition: transform 0.2s; /* Transition rapide pour l'effet de clic */
-}
-
-@keyframes shake {
-    0%, 100% {
-      transform: translateX(0);
-    }
-    10%, 30%, 50%, 70% {
-      transform: translateX(-4px);
-    }
-    20%, 40%, 60%, 80% {
-      transform: translateX(4px);
-    }
-  }
-  
-  .shake {
-    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
-    transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
-    perspective: 1000px;
-  }
-  
-
-
-@keyframes ripple {
-    0% {
-        transform: translate(-50%, -50%) scale(10);
-        opacity: 0.5;
-    }
-    100% {
-        transform: translate(-50%, -50%) scale(50); /* Augmente la taille du cercle pour déborder */
-        opacity: 0;
-    }
-}
-  
-  .ripple-effect {
-    position: relative;
-    overflow: hidden;
-    transform: translate3d(0, 0, 0);
-  }
-  
-  .ripple-effect::after {
-    content: '';
-    position: absolute;
+.modal {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
     width: 100%;
-    height: 100%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 10%, transparent 10.01%);
-    opacity: 0;
-    pointer-events: none;
-    animation: ripple 0.4s linear;
-  }
-  
-  /* L'animation ne se déclenche que lorsque la classe .animate-ripple est ajoutée */
-  .animate-ripple::after {
-    animation: ripple 0.4s linear;
-  }
-  
-  /* Styles existants pour le bouton de nouveau projet */
-  .new-project-button {
-    justify-content: center; /* Centre horizontalement */
-    align-items: center; /* Centre verticalement */
-    color: #ffffff;
-    padding: 10px 20px;
-    border-radius: 20px;
-    cursor: pointer;
+    max-width: 400px;
+    background-color: #282828;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
     text-align: center;
-    width: 200px; /* Plus petit */
-    height : 50px;
-    margin: 100px auto; /* Centrer horizontalement */
-    transition: transform 0.3s;
-    position: relative; /* Assure que le pseudo-élément est positionné relativement à ce bouton */
-    overflow: visible; /* Permet aux pseudo-éléments de déborder visiblement */
 }
 
-.title-project-button {
-    background-color: #4CAF50; /* Transparence avec une teinte de bleu */
-    border-radius: 8px; /* Bords arrondis */
-    margin: 0px; 
-    padding: 0px;
-    flex-grow: 1; /* Permet aux éléments de remplir l'espace */
-    display: flex;
-    justify-content: center; /* Centre horizontalement */
-    align-items: center; /* Centre verticalement */
-    flex-grow: 0; /* Empêche le titre de grandir et prendre plus d'espace que nécessaire */
-    margin: 0; /* Assurez-vous de ne pas avoir de marge qui décale le texte */
-    height: 50px; /* Vous pouvez ajuster cette valeur selon la hauteur souhaitée */
+.modal-content h2 {
+    margin: 0 0 1rem;
 }
 
-
-
-.new-project-button.ripple-effect::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 20px; /* Taille initiale du cercle */
-    height: 20px; /* Taille initiale du cercle */
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 20%, transparent 51%);
-    border-radius: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    opacity: 1;
-    animation: ripple 0.4s linear;
+.modal-content input {
+    width: 80%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border: none;
+    border-radius: 0.25rem;
 }
-  /* Ajoutez ceci pour assurer que l'animation reste en place après le clic */
-  .new-project-button:active::after,
-  .new-project-button:focus::after {
-    animation: none;
-  }
+
+.modal-content button {
+    background-color: #1a73e8;
+    color: #f0f0f0;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.modal-content button:hover {
+    background-color: #185abc;
+}
+
+.hidden {
+    visibility: hidden;
+    opacity: 0;
+}

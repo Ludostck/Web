@@ -1,0 +1,111 @@
+/* signup.css */
+body {
+    font-family: 'Arial', sans-serif;
+    background: #23272a; /* Fond de base noir */
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    position: relative;
+}
+
+.signup-container {
+    background-color: #2c2f33;
+    padding: 3rem; /* Augmenter le padding pour rendre le conteneur plus grand */
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); /* Augmenter l'ombre pour plus de profondeur */
+    width: 400px; /* Augmenter la largeur du conteneur */
+    text-align: center;
+    position: relative;
+    z-index: 2;
+}
+
+h2 {
+    color: #7289da;
+    margin-bottom: 1.5rem; /* Augmenter le margin pour plus d'espace en bas */
+}
+
+.form-group {
+    margin-bottom: 1.5rem; /* Augmenter le margin pour plus d'espace en bas */
+    text-align: left;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #99aab5;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 0.75rem; /* Augmenter le padding pour des champs plus grands */
+    border: 1px solid #99aab5;
+    border-radius: 4px;
+    background-color: #2c2f33;
+    color: #ffffff;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    border-color: #7289da;
+    outline: none;
+}
+
+.signup-button {
+    background-color: #7289da;
+    color: #ffffff;
+    padding: 0.75rem 1.25rem; /* Augmenter le padding pour un bouton plus grand */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.25rem; /* Augmenter la taille de la police pour le bouton */
+}
+
+.signup-button:hover {
+    background-color: #5b6eae;
+}
+
+.back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    color: #7289da;
+    text-decoration: none;
+    font-size: 1.25rem;
+    border: 2px solid #7289da;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    z-index: 3;
+}
+
+.back-button:hover {
+    background-color: #7289da;
+    color: white;
+}
+
+.back-button .material-icons {
+    margin-right: 8px;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    background: radial-gradient(circle, rgba(128, 0, 128, 0.7) 0%, rgba(0, 0, 255, 0.5) 50%, rgba(0, 0, 0, 0.9) 100%);
+}
+
+ng-show {
+    color: #99aab5;
+    margin-top: 1rem;
+}

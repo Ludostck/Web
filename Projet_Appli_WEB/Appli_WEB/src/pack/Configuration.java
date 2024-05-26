@@ -9,6 +9,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import pack.User;
 
@@ -18,9 +21,11 @@ public class Configuration {
 	@Id
     @GeneratedValue(strategy=GenerationType.AUTO)  
 	int id;
-	String color;
-    @ManyToOne
-	User user;
+	boolean Theme;
+	
+    @OneToOne
+    @JsonIgnore
+	Session session;
 	
 
 	public int getId() {
@@ -31,20 +36,20 @@ public class Configuration {
 		this.id = id;
 	}
 
-	public String getColor() {
-		return color;
+	public boolean getTheme() {
+		return Theme;
 	}
 
-	public void setColor(String color) {
-		this.color = color;
+	public void setTheme(boolean color) {
+		this.Theme = color;
 	}
 
-	public User getUser() {
-		return user;
+	public Session getSession() {
+		return this.session;
 	}
 
-	public void setUser(User user) {
-		this.user = user;
+	public void setSession(Session session) {
+		this.session = session;
 	}
 
 	

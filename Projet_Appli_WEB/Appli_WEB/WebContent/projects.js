@@ -1,3 +1,30 @@
+window.onload = function() {
+    var pseudo = new URLSearchParams(window.location.search).get('pseudo');
+    if (pseudo) {
+        document.getElementById('userPseudo').textContent = pseudo;
+        loadUserProjects(pseudo);
+    } else {
+        console.error("Pseudo non trouvé dans l'URL");
+    }
+
+    document.getElementById('create-project-btn').addEventListener('click', function() {
+        var projectName = document.getElementById('new-project-name').value;
+        if (projectName) {
+            createProject(pseudo, projectName);
+        } else {
+            alert("Veuillez entrer un nom de projet.");
+        }
+    });
+
+    document.getElementById('config-button').addEventListener('click', function() {
+        window.location.href = 'configuration.html?pseudo=' + pseudo;
+    });
+
+    document.getElementById('stats-button').addEventListener('click', function() {
+        alert("Statistics button clicked");
+    });
+};
+
 function loadUserProjects(pseudo) {
     fetch('rest/projects?pseudo=' + encodeURIComponent(pseudo))
         .then(response => {
@@ -40,7 +67,6 @@ function loadUserProjects(pseudo) {
         });
 }
 
-
 function createProject(pseudo, projectName) {
     fetch('rest/projects', {
         method: 'POST',
@@ -60,30 +86,5 @@ function createProject(pseudo, projectName) {
     .catch(error => console.error('Error creating project:', error));
 }
 
-window.onload = function() {
-    var pseudo = new URLSearchParams(window.location.search).get('pseudo');
-    if (pseudo) {
-        document.getElementById('userPseudo').textContent = pseudo;
-        loadUserProjects(pseudo);
-    } else {
-        console.error("Pseudo non trouvé dans l'URL");
-    }
 
-    document.getElementById('new-project-button').addEventListener('click', function() {
-        document.getElementById('new-project-modal').classList.remove('hidden');
-    });
-
-    document.querySelector('.close').addEventListener('click', function() {
-        document.getElementById('new-project-modal').classList.add('hidden');
-    });
-
-    document.getElementById('create-project-btn').addEventListener('click', function() {
-        var projectName = document.getElementById('new-project-name').value;
-        if (projectName) {
-            createProject(pseudo, projectName);
-        } else {
-            alert("Veuillez entrer un nom de projet.");
-        }
-    });
-};
 

@@ -177,6 +177,114 @@ public class Facade {
         }
     }
 
+    @POST
+    @Path("/updatePseudo")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response updatePseudo(Map<String, String> requestData) {
+        String pseudo = requestData.get("pseudo");
+        String newPseudo = requestData.get("newPseudo");
+
+        try {
+            // Check if new pseudo already exists
+            long count = em.createQuery("SELECT COUNT(u) FROM User u WHERE u.pseudo = :newPseudo", Long.class)
+                           .setParameter("newPseudo", newPseudo)
+                           .getSingleResult();
+            if (count > 0) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                               .entity("{\"error\": \"Pseudo already exists.\"}")
+                               .build();
+            }
+
+            User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
+                          .setParameter("pseudo", pseudo)
+                          .getSingleResult();
+
+            user.setPseudo(newPseudo);
+            em.merge(user);
+
+            return Response.ok("{\"success\": true}").build();
+        } catch (NoResultException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                           .entity("{\"error\": \"User not found.\"}")
+                           .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("{\"error\": \"Unable to update pseudo.\"}")
+                           .build();
+        }
+    }
+
+    @POST
+    @Path("/updatePassword")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response updatePassword(Map<String, String> requestData) {
+        String pseudo = requestData.get("pseudo");
+        String oldPassword = requestData.get("oldPassword");
+        String newPassword = requestData.get("newPassword");
+
+        try {
+            User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo AND u.password = :password", User.class)
+                          .setParameter("pseudo", pseudo)
+                          .setParameter("password", oldPassword)
+                          .getSingleResult();
+
+            user.setPassword(newPassword);
+            em.merge(user);
+
+            return Response.ok("{\"success\": true}").build();
+        } catch (NoResultException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                           .entity("{\"error\": \"User not found or incorrect password.\"}")
+                           .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("{\"error\": \"Unable to update password.\"}")
+                           .build();
+        }
+    }
+
+    @POST
+    @Path("/updateTheme")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response updateTheme(Map<String, String> requestData) {
+        String pseudo = requestData.get("pseudo");
+        Boolean theme = Boolean.valueOf(requestData.get("theme"));
+
+        try {
+            User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
+                          .setParameter("pseudo", pseudo)
+                          .getSingleResult();
+
+            Session session = user.getSession();
+            Configuration configuration = session.getConfiguration();
+            if (configuration == null) {
+                configuration = new Configuration();
+                configuration.setSession(session);
+                em.persist(configuration);
+            }
+            configuration.setTheme(theme);
+            em.merge(configuration);
+
+            return Response.ok("{\"success\": true}").build();
+        } catch (NoResultException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                           .entity("{\"error\": \"User not found.\"}")
+                           .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("{\"error\": \"Unable to update theme.\"}")
+                           .build();
+        }
+    }
+
+
+
 
 
 

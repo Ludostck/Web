@@ -30,6 +30,10 @@ public class Session {
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Projet> projets;
     
+    @OneToOne(mappedBy = "session", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Configuration config;
+    
 
     public Long getId() {
         return id;
@@ -69,5 +73,13 @@ public class Session {
 
     public void setProjets(List<Projet> projets) {
         this.projets = projets;
+    }
+    
+    public Configuration getConfiguration() {
+    	return this.config;
+    }
+    
+    public void setConfiguration(Configuration config) {
+    	this.config = config;
     }
 }

@@ -6,32 +6,38 @@
     <title>Connexion</title>
     <link rel="stylesheet" href="login.css">
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-    <div ng-app="loginApp" ng-controller="LoginController">
-        <div class="video-background">
-            <div class="overlay"></div> 
+    <video autoplay muted loop class="video-background">
+        <source src="fond.webm" type="video/webm">
+    </video>
+    <div class="overlay"></div>
+    <div ng-app="loginApp" ng-controller="LoginController" class="container">
+        <h1 class="title">Personal Web IDE</h1>
+        <div class="content">
+            <div class="login-container">
+                <h2>Bienvenue</h2>
+                <form id="login-form" ng-submit="submitForm()">
+                    <div class="form-group">
+                        <label for="pseudo">
+                            <i class="material-icons icon">person</i>Identifiant
+                        </label>
+                        <input type="text" id="pseudo" name="pseudo" ng-model="formData.pseudo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">
+                            <i class="material-icons icon">lock</i>Mot de passe
+                        </label>
+                        <input type="password" id="password" name="password" ng-model="formData.password" required>
+                    </div>
+                    <button type="submit" class="login-button">Valider</button>
+                </form>
+                <div ng-show="response" class="response">{{ response }}</div>
+            </div>
         </div>
-
-        <div class="login-container">
-            <h2>Bienvenue</h2>
-            <form id="login-form" ng-submit="submitForm()">
-                <div class="form-group">
-                    <label for="pseudo">Identifiant</label>
-                    <input type="text" id="pseudo" name="pseudo" ng-model="formData.pseudo" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Mot de passe</label>
-                    <input type="password" id="password" name="password" ng-model="formData.password" required>
-                </div>
-                <button type="submit" class="login-button">Valider</button>
-            </form>
-            <div ng-show="response">{{ response }}</div>
-            
-            <a href="signup.html" class="signup-button">Créer le compte</a>
-        </div>
+        <a href="signup.html" class="signup-button">Créer le compte</a>
     </div>
-
     <script src="login.js"></script>
 </body>
 </html>

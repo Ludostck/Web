@@ -4,10 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Créer un compte</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="signup.css">
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
+    <a href="login.html" class="back-button">
+        <i class="material-icons">arrow_back</i> Retour
+    </a>
+    <div class="overlay"></div>
     <div ng-app="signupApp" ng-controller="SignupController">
         <div class="signup-container">
             <h2>Créer un compte</h2>
@@ -28,6 +33,5 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
     <script src="signup.js"></script>
-
 </body>
 </html>
