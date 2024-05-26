@@ -12,22 +12,7 @@
         <aside id="sidebar">
             <button class="button-side" id="new-file">Nouveau Fichier</button>
             <button class="button-side" id="new-folder">Nouveau Dossier</button>
-            <div class="folder">
-                <span class="folder-name">DOSSIER1</span>
-                <div class="files hidden">
-                    <div class="file">FICHIER_1</div>
-                    <div class="file">FICHIER_2</div>
-                    <div class="file">FICHIER_3</div>
-                    <div class="file">FICHIER_4</div>
-                </div>
-            </div>
-            <div class="folder">
-                <span class="folder-name">DOSSIER2</span>
-                <div class="files hidden">
-                    <div class="file">FICHIER_1</div>
-                    <div class="file">FICHIER_2</div>
-                </div>
-            </div>
+            <div id="folders-container"></div>
         </aside>
         
         <div class="editor-container">
@@ -43,12 +28,6 @@
     <button id="back-button">Retour</button>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
     <script src="code.js"></script>
-    <script>
-        window.onload = function() {
-            var projectName = new URLSearchParams(window.location.search).get('projectName');
-            document.getElementById('project-name').textContent = projectName;
-        };
-    </script>
+
 </body>
 </html>
-            

@@ -35,6 +35,7 @@ public class Session {
     private Configuration config;
     
 
+
     public Long getId() {
         return id;
     }
@@ -82,4 +83,6 @@ public class Session {
     public void setConfiguration(Configuration config) {
     	this.config = config;
     }
+
+
 }

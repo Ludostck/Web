@@ -1,11 +1,19 @@
 package pack;
 
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import javax.ejb.Singleton;
 import javax.persistence.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.transaction.Transactional;
+
+import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.Response;
+import java.security.SecureRandom;
+import java.util.Base64;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,10 +22,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+
+
 @Singleton
 @Path("/")
 public class Facade {
 
+	private static final String AUTH_COOKIE_NAME = "auth_token";
     @PersistenceContext
     EntityManager em;
 
@@ -30,14 +41,26 @@ public class Facade {
     public Response traiterConnexion(User user) {
         try {
             LOGGER.info("Attempting login for user: " + user.getPseudo());
+            
+            // Chiffrer le mot de passe avec SHA-256
+            String hashedPassword = hashPassword(user.getPassword());
+            
             User foundUser = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo AND u.password = :password", User.class)
                                .setParameter("pseudo", user.getPseudo())
-                               .setParameter("password", user.getPassword())
+                               .setParameter("password", hashedPassword)
                                .getSingleResult();
 
             if (foundUser != null) {
+                // Si la connexion est réussie, générez un token unique
+                String authToken = generateToken();
+                foundUser.setAuth_token(authToken);
+                // Créez un cookie pour stocker le token
+                NewCookie authCookie = new NewCookie(AUTH_COOKIE_NAME, authToken, "/", null, null, NewCookie.DEFAULT_MAX_AGE, false, true);
+
                 LOGGER.info("Login successful for user: " + foundUser.getPseudo());
-                return Response.ok("{\"success\": true, \"message\": \"Connexion réussie\", \"pseudo\": \"" + foundUser.getPseudo() + "\"}").build();
+                return Response.ok("{\"success\": true, \"message\": \"Connexion réussie\", \"pseudo\": \"" + foundUser.getPseudo() + "\"}")
+                        .cookie(authCookie)
+                        .build();
             } else {
                 LOGGER.warning("Login failed for user: " + user.getPseudo());
                 return Response.status(Response.Status.UNAUTHORIZED).entity("{\"success\": false, \"message\": \"Identifiant ou mot de passe incorrect\"}").build();
@@ -51,6 +74,7 @@ public class Facade {
         }
     }
 
+
     @POST
     @Path("/signup")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -59,6 +83,19 @@ public class Facade {
     public Response createUser(User user) {
         try {
             LOGGER.info("Creating user: " + user.getPseudo());
+            
+            // Vérifier s'il y a déjà un utilisateur avec le même pseudo
+            long count = em.createQuery("SELECT COUNT(u) FROM User u WHERE u.pseudo = :pseudo", Long.class)
+                           .setParameter("pseudo", user.getPseudo())
+                           .getSingleResult();
+            if (count > 0) {
+                LOGGER.warning("User with pseudo " + user.getPseudo() + " already exists.");
+                return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"User with this pseudo already exists.\"}").build();
+            }
+            
+            // Chiffrer le mot de passe avec SHA-256
+            String hashedPassword = hashPassword(user.getPassword());
+            user.setPassword(hashedPassword);
             Session newSession = new Session();
             newSession.setHeureDebut(new Date());
             newSession.setUser(user);
@@ -101,17 +138,7 @@ public class Facade {
             }
             LOGGER.info("Found session for user: " + user.getPseudo() + " with session ID: " + session.getId());
 
-            // Forcer l'initialisation des projets et fichiers
-            session.getProjets().forEach(projet -> {
-                LOGGER.info("Initializing project: " + projet.getTitle() + " with ID: " + projet.getId());
-                if (projet.getFichiers() == null) {
-                    LOGGER.info("Project " + projet.getTitle() + " has no files, initializing empty list.");
-                    projet.setFichiers(new ArrayList<>());
-                } else {
-                    LOGGER.info("Project " + projet.getTitle() + " has " + projet.getFichiers().size() + " files.");
-                    projet.getFichiers().size(); // Forcer l'initialisation des fichiers
-                }
-            });
+
 
             List<Projet> projects = session.getProjets();
             LOGGER.info("Number of projects found: " + projects.size());
@@ -140,7 +167,7 @@ public class Facade {
     public Response createProject(Map<String, String> requestData) {
         String pseudo = requestData.get("pseudo");
         String projectName = requestData.get("projectName");
-
+        
         try {
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
@@ -160,8 +187,14 @@ public class Facade {
             newProject.setTitle(projectName);
             newProject.setOwner(session);
 
-            session.getProjets().add(newProject);
+            
+            if (session.getProjets() == null) {
+                session.setProjets(new ArrayList<>());
+            }
 
+            session.getProjets().add(newProject);
+            
+            // Persister le projet, le dossier et le fichier
             em.persist(newProject);
             em.merge(session);
 
@@ -176,6 +209,9 @@ public class Facade {
                            .build();
         }
     }
+
+
+
 
     @POST
     @Path("/updatePseudo")
@@ -227,12 +263,16 @@ public class Facade {
         String newPassword = requestData.get("newPassword");
 
         try {
+            // Chiffrer les mots de passe avec SHA-256
+            String hashedOldPassword = hashPassword(oldPassword);
+            String hashedNewPassword = hashPassword(newPassword);
+
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo AND u.password = :password", User.class)
                           .setParameter("pseudo", pseudo)
-                          .setParameter("password", oldPassword)
+                          .setParameter("password", hashedOldPassword)
                           .getSingleResult();
 
-            user.setPassword(newPassword);
+            user.setPassword(hashedNewPassword);
             em.merge(user);
 
             return Response.ok("{\"success\": true}").build();
@@ -246,6 +286,7 @@ public class Facade {
                            .build();
         }
     }
+
 
     @POST
     @Path("/updateTheme")
@@ -285,8 +326,78 @@ public class Facade {
 
 
 
+    @GET
+    @Path("/dossiers")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getProjectFolders(@QueryParam("pseudo") String pseudo, @QueryParam("projectName") String projectName) {
+        try {
+            // Récupération de l'utilisateur par son pseudo
+            User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
+                          .setParameter("pseudo", pseudo)
+                          .getSingleResult();
+            LOGGER.info("Found user: " + user.getPseudo() + " with ID: " + user.getId());
+
+            // Récupération de la session de l'utilisateur
+            Session session = user.getSession();
+            if (session == null) {
+                LOGGER.warning("No session found for user: " + user.getPseudo());
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity("{\"error\": \"Session not found for user.\"}")
+                               .build();
+            }
+
+            // Récupérer le projet à partir du nom du projet et de la session utilisateur
+            Projet projet = em.createQuery("SELECT p FROM Projet p WHERE p.title = :title AND p.owner = :owner", Projet.class)
+                              .setParameter("title", projectName)
+                              .setParameter("owner", session)
+                              .getSingleResult();
+
+            if (projet == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity("{\"error\": \"Project not found.\"}")
+                               .build();
+            }
+
+            List<Dossier> folders = projet.getDossiers();
+
+            return Response.ok(folders).build();
+        } catch (NoResultException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                           .entity("{\"error\": \"Project or user not found.\"}")
+                           .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("{\"error\": \"Unable to load folders.\"}")
+                           .build();
+        }
+    }
 
 
+
+ // Méthode pour hasher le mot de passe avec SHA-256
+    private String hashPassword(String password) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(password.getBytes());
+        StringBuilder hexString = new StringBuilder();
+
+        for (byte b : hash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+
+        return hexString.toString();
+    }
+
+    
+    private String generateToken() {
+        SecureRandom secureRandom = new SecureRandom();
+        byte[] token = new byte[32];
+        secureRandom.nextBytes(token);
+        return Base64.getEncoder().encodeToString(token);
+    }
 
 
 }

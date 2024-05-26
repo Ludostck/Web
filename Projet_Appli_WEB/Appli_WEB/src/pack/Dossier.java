@@ -1,24 +1,40 @@
 package pack;
 
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import java.util.List;
 
-import javax.persistence.*;
-
+@Entity
 public class Dossier {
-	
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private long id;
 	
 	private String nom;
 	
-	@OneToMany (mappedBy = "parent")
+	@OneToMany(mappedBy = "parent", fetch = FetchType.EAGER)
 	private List<Dossier> enfants;
 	
 	@ManyToOne
 	private Dossier parent;
 	
-	@OneToMany
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "projet_id")
+	@JsonBackReference
+	private Projet projet;
+
+	
+	@OneToMany(mappedBy = "dossier", fetch = FetchType.EAGER)
 	private List<Fichier> fichiers;
 	
 	public Dossier() {}
@@ -64,4 +80,17 @@ public class Dossier {
 		return this.fichiers;
 	}
 	
+	public void setFichiers(List<Fichier> fichiers) {
+		this.fichiers = fichiers;
+	}
+	
+	public Projet getProjet(){
+		return this.projet;
+	}
+	
+	public void setProjet(Projet proj) {
+		this.projet = proj;
+	}
+
+
 }

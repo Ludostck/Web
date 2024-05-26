@@ -22,12 +22,13 @@ public class Fichier {
     private String type;
     private String contenu;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "projet_id")
     @JsonIgnore 
     private Projet projet;
-
-    // getters and setters
+    
+    @ManyToOne(fetch = FetchType.EAGER)
+    private Dossier dossier;
 	
 	
 	public Fichier() {}
@@ -72,6 +73,14 @@ public class Fichier {
 
 	public void setProjet(Projet projet) {
 		this.projet = projet;
+	}
+	
+	public Dossier getDossier() {
+		return dossier;
+	}
+
+	public void setDossier(Dossier dossier) {
+		this.dossier = dossier;
 	}
 
 }

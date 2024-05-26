@@ -1,38 +1,27 @@
 package pack;
-import java.util.ArrayList;
-import java.util.Date;
+
+import javax.persistence.*;
 import java.util.List;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 
 @Entity
 public class Projet {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String title;
 
-    @OneToMany(mappedBy = "projet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Fichier> fichiers = new ArrayList<>();
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "session_id")
-    @JsonIgnore
+    @ManyToOne
+    @JsonBackReference
     private Session owner;
+
+
+    @OneToMany(mappedBy = "projet", fetch = FetchType.EAGER)
+    private List<Dossier> dossiers;
+
 
     // getters and setters
 
@@ -59,14 +48,12 @@ public class Projet {
     public void setOwner(Session owner) {
         this.owner = owner;
     }
-    
-    public List<Fichier> getFichiers() {
-    	return this.fichiers;
-    }
-    
-    public void setFichiers(List<Fichier> fichiers) {
-    	this.fichiers = fichiers;
-    }
-    
-}
 
+    public List<Dossier> getDossiers() {
+        return dossiers;
+    }
+
+    public void setDossiers(List<Dossier> dossiers) {
+        this.dossiers = dossiers;
+    }
+}

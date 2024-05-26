@@ -1,4 +1,3 @@
-/* style.css */
 body, html {
     height: 100%;
     margin: 0;
@@ -33,17 +32,19 @@ body, html {
 
 .file {
     padding: 5px 20px;
-    background-color: #555; /* Couleur de fond initiale */
+    background-color: #555;
     margin: 2px 0;
     cursor: pointer;
-    transition: background-color 0.3s; /* Transition douce pour le changement de couleur */
+    transition: background-color 0.3s;
 }
 
 .file:hover {
-    background-color: #777; /* Couleur de fond au survol */
+    background-color: #777;
 }
 
-
+.file.selected {
+    background-color: #888;
+}
 
 #editor-toolbar {
     display: flex;
@@ -68,7 +69,6 @@ body, html {
     background-color: #007ACC;
     color: white;
     padding: 10px;
-    
     border: none;
     cursor: pointer;
     margin: 2px;
@@ -79,17 +79,16 @@ body, html {
 }
 
 .editor-container {
-    flex: 1; /* Prend tout l'espace restant */
+    flex: 1;
     display: flex;
-    flex-direction: column; /* Empile les éléments l'un sur l'autre */
+    flex-direction: column;
     align-items: stretch;
     padding: 0px;
 }
 
 #editor {
-    flex: 1; /* Ajuste l'éditeur pour qu'il prenne tout l'espace restant verticalement */
+    flex: 1;
 }
-
 
 #back-button {
     position: absolute;
@@ -105,17 +104,14 @@ body, html {
     background-color: #444;
 }
 
-
 .java-code {
-    color: #f75b5b; /* Rouge */
+    color: #f75b5b;
 }
 
 .c-code {
-    color: #5b5bf7; /* Bleu */
+    color: #5b5bf7;
 }
 
 .python-code {
-    color: #f7d85b; /* Jaune */
+    color: #f7d85b;
 }
-
-
