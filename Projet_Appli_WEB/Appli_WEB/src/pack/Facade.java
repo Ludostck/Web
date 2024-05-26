@@ -8,6 +8,7 @@ import javax.persistence.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import javax.transaction.Transactional;
 
 import javax.ws.rs.core.NewCookie;
@@ -103,12 +104,20 @@ public class Facade {
             user.setSession(newSession);
 
             em.persist(newSession);
+            String authToken = generateToken();
+            user.setAuth_token(authToken);
+            // Créez un cookie pour stocker le token
+            NewCookie authCookie = new NewCookie(AUTH_COOKIE_NAME, authToken, "/", null, null, NewCookie.DEFAULT_MAX_AGE, false, true);
+
             em.persist(user);
 
             em.flush();
 
+            
             LOGGER.info("User created successfully: " + user.getPseudo());
-            return Response.ok("{\"pseudo\": \"" + user.getPseudo() + "\"}").build();
+            return Response.ok("{\"pseudo\": \"" + user.getPseudo() + "\"}")                        
+            		.cookie(authCookie)
+                    .build();
         } catch (Exception e) {
             LOGGER.severe("Error creating user: " + user.getPseudo() + " - " + e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Unable to create user.\"}").build();
@@ -122,6 +131,8 @@ public class Facade {
     public Response getUserProjects(@QueryParam("pseudo") String pseudo) {
         LOGGER.info("Received request to get projects for pseudo: " + pseudo);
         try {
+        	
+            
             // Récupération de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
@@ -398,6 +409,26 @@ public class Facade {
         secureRandom.nextBytes(token);
         return Base64.getEncoder().encodeToString(token);
     }
+    
+
+
+    @GET
+    @Path("/validate-token")
+    private boolean isValidToken(@QueryParam("token") String token) {
+        try {
+            User user = em.createQuery("SELECT u FROM User u WHERE u.auth_token = :token", User.class)
+                          .setParameter("token", token)
+                          .getSingleResult();
+            
+            return user!=null;
+        } catch (NoResultException e) {
+            return false;
+        } catch (Exception e) {
+            LOGGER.severe("Error validating token: " + e.getMessage());
+            return false;
+        }
+    }
+
 
 
 }
