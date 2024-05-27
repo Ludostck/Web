@@ -9,6 +9,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 public class Fichier {
@@ -26,6 +27,8 @@ public class Fichier {
     private Projet projet;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "dossier_id")
+    @JsonManagedReference
     private Dossier dossier;
 
     public Fichier() {}

@@ -202,13 +202,9 @@ public class Facade {
             
             Dossier dossier = new Dossier();
             dossier.setProjet(newProject);
-            dossier.setNom("dossier 1");
+            dossier.setNom(projectName);
             
             
-            Fichier fichier = new Fichier();
-            fichier.setDossier(dossier);
-            fichier.setNom("fichier 1");
-            em.persist(fichier);
             
             em.persist(dossier);
             if (session.getProjets() == null) {
@@ -341,6 +337,75 @@ public class Facade {
                            .build();
         }
     }
+
+    @POST
+    @Path("/fichiers")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response createFile(Map<String, String> requestData) {
+        String pseudo = requestData.get("pseudo");
+        String projectName = requestData.get("projectName");
+        String fileName = requestData.get("fileName");
+        Long folderId = Long.valueOf(requestData.get("folderId"));
+
+        try {
+            // Récupération de l'utilisateur par son pseudo
+            User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
+                          .setParameter("pseudo", pseudo)
+                          .getSingleResult();
+
+            // Récupération de la session de l'utilisateur
+            Session session = user.getSession();
+            if (session == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity("{\"error\": \"Session not found for user.\"}")
+                               .build();
+            }
+
+            // Récupérer le projet à partir du nom du projet et de la session utilisateur
+            Projet projet = em.createQuery("SELECT p FROM Projet p WHERE p.title = :title AND p.owner = :owner", Projet.class)
+                              .setParameter("title", projectName)
+                              .setParameter("owner", session)
+                              .getSingleResult();
+
+            if (projet == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity("{\"error\": \"Project not found.\"}")
+                               .build();
+            }
+
+            // Récupérer le dossier par son ID
+            Dossier dossier = em.find(Dossier.class, folderId);
+            if (dossier == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity("{\"error\": \"Folder not found.\"}")
+                               .build();
+            }
+
+            // Création du nouveau fichier
+            Fichier newFile = new Fichier();
+            newFile.setNom(fileName);
+            newFile.setDossier(dossier);
+            newFile.setProjet(projet);
+            newFile.setContenu("test");
+
+            // Persister le fichier
+            em.persist(newFile);
+
+            return Response.ok("{\"success\": true}").build();
+        } catch (NoResultException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                           .entity("{\"error\": \"User or project not found.\"}")
+                           .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("{\"error\": \"Unable to create file.\"}")
+                           .build();
+        }
+    }
+
+    
 
     @POST
     @Path("/updatePassword")
@@ -520,6 +585,50 @@ public class Facade {
         } catch (Exception e) {
             LOGGER.severe("Error validating token: " + e.getMessage());
             return false;
+        }
+    }
+
+    
+    @GET
+    @Path("/fichiers/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getFileContent(@PathParam("id") Long id) {
+        try {
+
+            Fichier fichier = em.find(Fichier.class, id);
+            if (fichier == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity("{\"error\": \"File not found.\"}")
+                               .build();
+            }
+            return Response.ok(fichier).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("{\"error\": \"Unable to load file content.\"}")
+                           .build();
+        }
+    }
+
+    @PUT
+    @Path("/fichiers/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response updateFileContent(@PathParam("id") Long id, Map<String, String> requestData) {
+        try {
+            Fichier fichier = em.find(Fichier.class, id);
+            if (fichier == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity("{\"error\": \"File not found.\"}")
+                               .build();
+            }
+            fichier.setContenu(requestData.get("contenu"));
+            em.merge(fichier);
+            return Response.ok("{\"success\": true}").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("{\"error\": \"Unable to save file content.\"}")
+                           .build();
         }
     }
 

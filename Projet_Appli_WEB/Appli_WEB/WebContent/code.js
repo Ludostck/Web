@@ -1,24 +1,112 @@
 window.onload = function() {
     var projectName = new URLSearchParams(window.location.search).get('projectName');
     var pseudo = new URLSearchParams(window.location.search).get('pseudo');
+    
+    document.getElementById('project-name-display').textContent = projectName; // Affiche le nom du projet
+
     loadFoldersAndFiles(projectName, pseudo); // Charger les dossiers dans la sidebar
 
     document.getElementById('new-folder').addEventListener('click', function() {
-        document.getElementById('new-folder-input').classList.toggle('hidden');
+        document.getElementById('new-folder-modal').classList.remove('hidden');
+        document.getElementById('new-folder-modal').style.display = 'flex';
+    });
+
+    document.getElementById('close-new-folder-modal').addEventListener('click', function() {
+        document.getElementById('new-folder-modal').classList.add('hidden');
+        document.getElementById('new-folder-modal').style.display = 'none';
     });
 
     document.getElementById('create-folder').addEventListener('click', function() {
         var folderName = document.getElementById('folder-name').value;
+        console.log('Folder name entered:', folderName); // Log the folder name to debug
         if (folderName) {
             createNewFolder(folderName, projectName, pseudo);
+        } else {
+            alert("Folder name cannot be empty.");
         }
+    });
+
+    document.getElementById('save-btn').addEventListener('click', function() {
+        saveFileContent();
+    });
+
+    document.getElementById('close-new-file-modal').addEventListener('click', function() {
+        document.getElementById('new-file-modal').classList.add('hidden');
+        document.getElementById('new-file-modal').style.display = 'none';
+    });
+
+    document.getElementById('create-file').addEventListener('click', function() {
+        var fileName = document.getElementById('file-name').value;
+        var folderId = document.getElementById('create-file').dataset.folderId;
+        console.log('File name entered:', fileName); // Log the file name to debug
+        if (fileName) {
+            createNewFile(fileName, folderId, projectName, pseudo);
+        } else {
+            alert("File name cannot be empty.");
+        }
+    });
+
+    document.getElementById('close-all-folders').addEventListener('click', function() {
+        closeAllFolders();
     });
 };
 
+var currentFileId = null;
+var editor;
+
+function getFileIconClass(extension) {
+    switch (extension) {
+        case 'java':
+            return 'mdi mdi-language-java';
+        case 'py':
+            return 'mdi mdi-language-python';
+        case 'c':
+        case 'h':
+            return 'mdi mdi-language-c';
+        case 'js':
+            return 'mdi mdi-language-javascript';
+        case 'html':
+            return 'mdi mdi-language-html5';
+        case 'css':
+            return 'mdi mdi-language-css3';
+        case 'json':
+            return 'mdi mdi-code-json';
+        case 'md':
+            return 'mdi mdi-language-markdown';
+        default:
+            return 'mdi mdi-file';
+    }
+}
+
+function getEditorLanguage(extension) {
+    switch (extension) {
+        case 'java':
+            return 'java';
+        case 'py':
+            return 'python';
+        case 'c':
+        case 'h':
+            return 'c';
+        case 'js':
+            return 'javascript';
+        case 'html':
+            return 'html';
+        case 'css':
+            return 'css';
+        case 'json':
+            return 'json';
+        case 'md':
+            return 'markdown';
+        default:
+            return 'plaintext';
+    }
+}
+
 // Fonction pour basculer la visibilité des fichiers dans un dossier
-function toggleFolder(folderElement) {
+function toggleFolder(folderElement, iconElement) {
     var filesList = folderElement.querySelector(".files");
     filesList.classList.toggle("hidden");
+    iconElement.classList.toggle("rotate-icon-down");
 }
 
 // Fonction pour gérer la sélection d'un fichier
@@ -29,6 +117,9 @@ function selectFile(event) {
     });
 
     event.currentTarget.classList.add('selected');
+    var fileId = event.currentTarget.dataset.fileId;
+    loadFileContent(fileId, event.currentTarget.textContent);
+
     event.stopPropagation();
 }
 
@@ -56,9 +147,29 @@ function loadFoldersAndFiles(projectName, pseudo) {
                 var folderElement = document.createElement('div');
                 folderElement.className = 'folder';
 
+                var folderHeader = document.createElement('div');
+                folderHeader.className = 'folder-header';
+
+                var folderIcon = document.createElement('i');
+                folderIcon.className = 'fas fa-chevron-right rotate-icon';
+
                 var folderNameElement = document.createElement('span');
                 folderNameElement.className = 'folder-name';
-                folderNameElement.textContent = folder.nom;
+                folderNameElement.innerHTML = '<i class="mdi mdi-folder"></i> ' + folder.nom;
+
+                var addFileButton = document.createElement('button');
+                addFileButton.className = 'add-file-button';
+                addFileButton.innerHTML = '<i class="fas fa-plus"></i>';
+                addFileButton.addEventListener('click', function(event) {
+                    event.stopPropagation(); // Prevent toggling the folder
+                    document.getElementById('new-file-modal').classList.remove('hidden');
+                    document.getElementById('new-file-modal').style.display = 'flex';
+                    document.getElementById('create-file').dataset.folderId = folder.id;
+                });
+
+                folderHeader.appendChild(folderIcon);
+                folderHeader.appendChild(folderNameElement);
+                folderHeader.appendChild(addFileButton);
 
                 var filesListElement = document.createElement('div');
                 filesListElement.className = 'files hidden';
@@ -66,17 +177,20 @@ function loadFoldersAndFiles(projectName, pseudo) {
                 folder.fichiers.forEach(file => {
                     var fileElement = document.createElement('div');
                     fileElement.className = 'file';
-                    fileElement.textContent = file.nom;
+                    var extension = file.nom.split('.').pop();
+                    var iconClass = getFileIconClass(extension);
+                    fileElement.innerHTML = '<i class="' + iconClass + ' file-icon"></i>' + file.nom;
+                    fileElement.dataset.fileId = file.id;
                     fileElement.addEventListener('click', selectFile);
                     filesListElement.appendChild(fileElement);
                 });
 
-                folderElement.appendChild(folderNameElement);
+                folderElement.appendChild(folderHeader);
                 folderElement.appendChild(filesListElement);
                 foldersContainer.appendChild(folderElement);
 
-                folderNameElement.addEventListener('click', function() {
-                    toggleFolder(folderElement);
+                folderHeader.addEventListener('click', function() {
+                    toggleFolder(folderElement, folderIcon);
                 });
             });
         })
@@ -90,7 +204,7 @@ function createNewFolder(folderName, projectName, pseudo) {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name: folderName, projectName: projectName, pseudo: pseudo })
+        body: JSON.stringify({ folderName: folderName, projectName: projectName, pseudo: pseudo })
     })
     .then(response => {
         if (!response.ok) {
@@ -102,21 +216,112 @@ function createNewFolder(folderName, projectName, pseudo) {
     })
     .then(data => {
         document.getElementById('folder-name').value = ''; // Clear the input field
-        document.getElementById('new-folder-input').classList.add('hidden'); // Hide the input field
+        document.getElementById('new-folder-modal').classList.add('hidden'); // Hide the modal
+        document.getElementById('new-folder-modal').style.display = 'none'; // Hide the modal
         loadFoldersAndFiles(projectName, pseudo); // Reload folders to reflect the new folder
     })
     .catch(error => console.error('Error creating new folder:', error));
 }
 
+// Fonction pour créer un nouveau fichier
+function createNewFile(fileName, folderId, projectName, pseudo) {
+    fetch('rest/fichiers', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ fileName: fileName, folderId: folderId, projectName: projectName, pseudo: pseudo })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(error => {
+                throw new Error(error.error || 'Network response was not ok');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById('file-name').value = ''; // Clear the input field
+        document.getElementById('new-file-modal').classList.add('hidden'); // Hide the modal
+        document.getElementById('new-file-modal').style.display = 'none'; // Hide the modal
+        loadFoldersAndFiles(projectName, pseudo); // Reload folders to reflect the new file
+    })
+    .catch(error => console.error('Error creating new file:', error));
+}
+
+// Fonction pour charger le contenu d'un fichier
+function loadFileContent(fileId, fileName) {
+    console.log('Loading content for fileId:', fileId); // Ajout de log
+    fetch('rest/fichiers/' + fileId)
+        .then(response => {
+            console.log('Response status:', response.status); // Ajout de log
+            if (!response.ok) {
+                return response.json().then(error => {
+                    throw new Error(error.error || 'Network response was not ok');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('File content received:', data); // Ajout de log
+            if (data && data.hasOwnProperty('contenu')) {
+                editor.setValue(data.contenu);
+                currentFileId = fileId;
+                console.log('File content set in editor:', data.contenu); // Ajout de log
+                var extension = fileName.split('.').pop();
+                var language = getEditorLanguage(extension);
+                monaco.editor.setModelLanguage(editor.getModel(), language);
+            } else {
+                console.error('File content property is missing.');
+            }
+        })
+        .catch(error => console.error('Error loading file content:', error));
+}
+
+// Fonction pour sauvegarder le contenu du fichier
+function saveFileContent() {
+    if (!currentFileId) {
+        alert("No file selected to save.");
+        return;
+    }
+
+    var fileContent = editor.getValue();
+    fetch('rest/fichiers/' + currentFileId, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ contenu: fileContent })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(error => {
+                throw new Error(error.error || 'Network response was not ok');
+            });
+        }
+        alert("File saved successfully.");
+    })
+    .catch(error => console.error('Error saving file content:', error));
+}
+
+// Fonction pour fermer tous les dossiers ouverts
+function closeAllFolders() {
+    var allFilesLists = document.querySelectorAll('.files');
+    allFilesLists.forEach(function(filesList) {
+        filesList.classList.add('hidden');
+    });
+
+    var allFolderIcons = document.querySelectorAll('.rotate-icon');
+    allFolderIcons.forEach(function(icon) {
+        icon.classList.remove('rotate-icon-down');
+    });
+}
+
 // Configuration pour charger les fichiers nécessaires de Monaco Editor
 require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.27.0/min/vs' }});
 require(['vs/editor/editor.main'], function () {
-    var editor = monaco.editor.create(document.getElementById('editor'), {
-        value: [
-            'function x() {',
-            '\tconsole.log("Hello, world!");',
-            '}'
-        ].join('\n'),
+    editor = monaco.editor.create(document.getElementById('editor'), {
+        value: '',
         language: 'java',
         theme: 'vs-dark'
     });

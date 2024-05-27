@@ -35,6 +35,7 @@ public class Dossier {
     private Projet projet;
 
     @OneToMany(mappedBy = "dossier", fetch = FetchType.EAGER)
+    @JsonBackReference
     private List<Fichier> fichiers = new ArrayList<>();
 
     public Dossier() {}
