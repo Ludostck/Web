@@ -1,6 +1,5 @@
 package pack;
 
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import javax.ejb.Singleton;
@@ -25,13 +24,11 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-
-
 @Singleton
 @Path("/")
 public class Facade {
 
-	private static final String AUTH_COOKIE_NAME = "auth_token";
+    private static final String AUTH_COOKIE_NAME = "auth_token";
     @PersistenceContext
     EntityManager em;
 
@@ -76,7 +73,6 @@ public class Facade {
             return Response.status(Response.Status.BAD_REQUEST).entity("{\"success\": false, \"message\": \"Erreur lors de la connexion\"}").build();
         }
     }
-
 
     @POST
     @Path("/signup")
@@ -127,7 +123,6 @@ public class Facade {
         LOGGER.info("Received request to get projects for pseudo: " + pseudo);
         
         try {
-        	LOGGER.info("token facade" + authToken);
             // Vérifier la validité du token
             if (!isValidToken(authToken + "=")) {
                 return Response.status(Response.Status.UNAUTHORIZED)
@@ -167,16 +162,18 @@ public class Facade {
         }
     }
 
-
-
-
-    
     @POST
     @Path("/projects")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response createProject(Map<String, String> requestData) {
+    public Response createProject(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .build();
+        }
+
         String pseudo = requestData.get("pseudo");
         String projectName = requestData.get("projectName");
         
@@ -238,16 +235,18 @@ public class Facade {
         }
     }
 
-
-
-
-
     @POST
     @Path("/updatePseudo")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response updatePseudo(Map<String, String> requestData) {
+    public Response updatePseudo(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .build();
+        }
+
         String pseudo = requestData.get("pseudo");
         String newPseudo = requestData.get("newPseudo");
 
@@ -281,13 +280,18 @@ public class Facade {
         }
     }
 
-    
     @POST
     @Path("/dossiers")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response createFolder(Map<String, String> requestData) {
+    public Response createFolder(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .build();
+        }
+
         String pseudo = requestData.get("pseudo");
         String projectName = requestData.get("projectName");
         String folderName = requestData.get("folderName");
@@ -350,7 +354,13 @@ public class Facade {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response createFile(Map<String, String> requestData) {
+    public Response createFile(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .build();
+        }
+
         String pseudo = requestData.get("pseudo");
         String projectName = requestData.get("projectName");
         String fileName = requestData.get("fileName");
@@ -412,14 +422,18 @@ public class Facade {
         }
     }
 
-    
-
     @POST
     @Path("/updatePassword")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response updatePassword(Map<String, String> requestData) {
+    public Response updatePassword(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .build();
+        }
+
         String pseudo = requestData.get("pseudo");
         String oldPassword = requestData.get("oldPassword");
         String newPassword = requestData.get("newPassword");
@@ -449,13 +463,18 @@ public class Facade {
         }
     }
 
-
     @POST
     @Path("/updateTheme")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response updateTheme(Map<String, String> requestData) {
+    public Response updateTheme(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .build();
+        }
+
         String pseudo = requestData.get("pseudo");
         Boolean theme = Boolean.valueOf(requestData.get("theme"));
 
@@ -486,12 +505,16 @@ public class Facade {
         }
     }
 
-
-
     @GET
     @Path("/dossiers")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getProjectFolders(@QueryParam("pseudo") String pseudo, @QueryParam("projectName") String projectName) {
+    public Response getProjectFolders(@QueryParam("pseudo") String pseudo, @QueryParam("projectName") String projectName, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .build();
+        }
+
         try {
             // Récupération de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
@@ -548,62 +571,17 @@ public class Facade {
         }
     }
 
-
-
-
- // Méthode pour hasher le mot de passe avec SHA-256
-    private String hashPassword(String password) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hash = digest.digest(password.getBytes());
-        StringBuilder hexString = new StringBuilder();
-
-        for (byte b : hash) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
-        }
-
-        return hexString.toString();
-    }
-
-    
-    private String generateToken() {
-        SecureRandom secureRandom = new SecureRandom();
-        byte[] token = new byte[32];
-        secureRandom.nextBytes(token);
-        return Base64.getEncoder().encodeToString(token);
-    }
-    
-
-
-    @GET
-    @Path("/validate-token")
-    @Produces(MediaType.APPLICATION_JSON)
-    public boolean isValidToken(@QueryParam("token") String token) {
-        try {
-            User user = em.createQuery("SELECT u FROM User u WHERE u.auth_token = :token", User.class)
-                          .setParameter("token", token)
-                          .getSingleResult();
-            
-            return user != null;
-        } catch (NoResultException e) {
-            return false;
-        } catch (Exception e) {
-            LOGGER.severe("Error validating token: " + e.getMessage());
-            return false;
-        }
-    }
-
-
-    
     @GET
     @Path("/fichiers/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getFileContent(@PathParam("id") Long id) {
-        try {
+    public Response getFileContent(@PathParam("id") Long id, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .build();
+        }
 
+        try {
             Fichier fichier = em.find(Fichier.class, id);
             if (fichier == null) {
                 return Response.status(Response.Status.NOT_FOUND)
@@ -623,7 +601,13 @@ public class Facade {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response updateFileContent(@PathParam("id") Long id, Map<String, String> requestData) {
+    public Response updateFileContent(@PathParam("id") Long id, Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .build();
+        }
+
         try {
             Fichier fichier = em.find(Fichier.class, id);
             if (fichier == null) {
@@ -646,7 +630,13 @@ public class Facade {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response startSession(@QueryParam("pseudo") String pseudo) {
+    public Response startSession(@QueryParam("pseudo") String pseudo, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .build();
+        }
+
         try {
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
@@ -675,7 +665,13 @@ public class Facade {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response stopSession(@QueryParam("pseudo") String pseudo) {
+    public Response stopSession(@QueryParam("pseudo") String pseudo, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .build();
+        }
+
         try {
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
@@ -695,13 +691,18 @@ public class Facade {
             return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Unable to stop session.\"}").build();
         }
     }
-    
-    
+
     @GET
     @Path("/statistics")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response getUserStatistics(@QueryParam("pseudo") String pseudo) {
+    public Response getUserStatistics(@QueryParam("pseudo") String pseudo, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .build();
+        }
+
         try {
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
@@ -735,12 +736,18 @@ public class Facade {
             return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Unable to load statistics.\"}").build();
         }
     }
-    
+
     @GET
     @Path("/projects/{projectId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response getProjectDetails(@PathParam("projectId") Long projectId) {
+    public Response getProjectDetails(@PathParam("projectId") Long projectId, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .build();
+        }
+
         try {
             Projet project = em.find(Projet.class, projectId);
             if (project == null) {
@@ -756,6 +763,45 @@ public class Facade {
         }
     }
 
+    // Méthode pour hasher le mot de passe avec SHA-256
+    private String hashPassword(String password) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(password.getBytes());
+        StringBuilder hexString = new StringBuilder();
 
+        for (byte b : hash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
 
+        return hexString.toString();
+    }
+
+    private String generateToken() {
+        SecureRandom secureRandom = new SecureRandom();
+        byte[] token = new byte[32];
+        secureRandom.nextBytes(token);
+        return Base64.getEncoder().encodeToString(token);
+    }
+
+    @GET
+    @Path("/validate-token")
+    @Produces(MediaType.APPLICATION_JSON)
+    public boolean isValidToken(@QueryParam("token") String token) {
+        try {
+            User user = em.createQuery("SELECT u FROM User u WHERE u.auth_token = :token", User.class)
+                          .setParameter("token", token)
+                          .getSingleResult();
+            
+            return user != null;
+        } catch (NoResultException e) {
+            return false;
+        } catch (Exception e) {
+            LOGGER.severe("Error validating token: " + e.getMessage());
+            return false;
+        }
+    }
 }

@@ -124,77 +124,82 @@ function selectFile(event) {
 }
 
 function loadFoldersAndFiles(projectName, pseudo) {
-    fetch('rest/dossiers?pseudo=' + encodeURIComponent(pseudo) + '&projectName=' + encodeURIComponent(projectName))
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(error => {
-                    throw new Error(error.error || 'Network response was not ok');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Data received:', data); // Log the data to inspect its structure
-
-            if (!data || !data.dossiers) {
-                throw new Error('Invalid response structure: "dossiers" property is missing');
-            }
-
-            var foldersContainer = document.getElementById('folders-container');
-            foldersContainer.innerHTML = ''; // Efface les anciens dossiers
-
-            data.dossiers.forEach(folder => {
-                var folderElement = document.createElement('div');
-                folderElement.className = 'folder';
-
-                var folderHeader = document.createElement('div');
-                folderHeader.className = 'folder-header';
-
-                var folderIcon = document.createElement('i');
-                folderIcon.className = 'fas fa-chevron-right rotate-icon';
-
-                var folderNameElement = document.createElement('span');
-                folderNameElement.className = 'folder-name';
-                folderNameElement.innerHTML = '<i class="mdi mdi-folder"></i> ' + folder.nom;
-
-                var addFileButton = document.createElement('button');
-                addFileButton.className = 'add-file-button';
-                addFileButton.innerHTML = '<i class="fas fa-plus"></i>';
-                addFileButton.addEventListener('click', function(event) {
-                    event.stopPropagation(); // Prevent toggling the folder
-                    document.getElementById('new-file-modal').classList.remove('hidden');
-                    document.getElementById('new-file-modal').style.display = 'flex';
-                    document.getElementById('create-file').dataset.folderId = folder.id;
-                });
-
-                folderHeader.appendChild(folderIcon);
-                folderHeader.appendChild(folderNameElement);
-                folderHeader.appendChild(addFileButton);
-
-                var filesListElement = document.createElement('div');
-                filesListElement.className = 'files hidden';
-
-                folder.fichiers.forEach(file => {
-                    var fileElement = document.createElement('div');
-                    fileElement.className = 'file';
-                    var extension = file.nom.split('.').pop();
-                    var iconClass = getFileIconClass(extension);
-                    fileElement.innerHTML = '<i class="' + iconClass + ' file-icon"></i>' + file.nom;
-                    fileElement.dataset.fileId = file.id;
-                    fileElement.addEventListener('click', selectFile);
-                    filesListElement.appendChild(fileElement);
-                });
-
-                folderElement.appendChild(folderHeader);
-                folderElement.appendChild(filesListElement);
-                foldersContainer.appendChild(folderElement);
-
-                folderHeader.addEventListener('click', function() {
-                    toggleFolder(folderElement, folderIcon);
-                });
+    fetch('rest/dossiers?pseudo=' + encodeURIComponent(pseudo) + '&projectName=' + encodeURIComponent(projectName), {
+        method: 'GET',
+        headers: {
+            'Authorization': getAuthToken() // Add the auth token
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(error => {
+                throw new Error(error.error || 'Network response was not ok');
             });
-        })
-        .catch(error => console.error('Error loading folders and files:', error));
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Data received:', data); // Log the data to inspect its structure
+
+        if (!data || !data.dossiers) {
+            throw new Error('Invalid response structure: "dossiers" property is missing');
+        }
+
+        var foldersContainer = document.getElementById('folders-container');
+        foldersContainer.innerHTML = ''; // Efface les anciens dossiers
+
+        data.dossiers.forEach(folder => {
+            var folderElement = document.createElement('div');
+            folderElement.className = 'folder';
+
+            var folderHeader = document.createElement('div');
+            folderHeader.className = 'folder-header';
+
+            var folderIcon = document.createElement('i');
+            folderIcon.className = 'fas fa-chevron-right rotate-icon';
+
+            var folderNameElement = document.createElement('span');
+            folderNameElement.className = 'folder-name';
+            folderNameElement.innerHTML = '<i class="mdi mdi-folder"></i> ' + folder.nom;
+
+            var addFileButton = document.createElement('button');
+            addFileButton.className = 'add-file-button';
+            addFileButton.innerHTML = '<i class="fas fa-plus"></i>';
+            addFileButton.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent toggling the folder
+                document.getElementById('new-file-modal').classList.remove('hidden');
+                document.getElementById('new-file-modal').style.display = 'flex';
+                document.getElementById('create-file').dataset.folderId = folder.id;
+            });
+
+            folderHeader.appendChild(folderIcon);
+            folderHeader.appendChild(folderNameElement);
+            folderHeader.appendChild(addFileButton);
+
+            var filesListElement = document.createElement('div');
+            filesListElement.className = 'files hidden';
+
+            folder.fichiers.forEach(file => {
+                var fileElement = document.createElement('div');
+                fileElement.className = 'file';
+                var extension = file.nom.split('.').pop();
+                var iconClass = getFileIconClass(extension);
+                fileElement.innerHTML = '<i class="' + iconClass + ' file-icon"></i>' + file.nom;
+                fileElement.dataset.fileId = file.id;
+                fileElement.addEventListener('click', selectFile);
+                filesListElement.appendChild(fileElement);
+            });
+
+            folderElement.appendChild(folderHeader);
+            folderElement.appendChild(filesListElement);
+            foldersContainer.appendChild(folderElement);
+
+            folderHeader.addEventListener('click', function() {
+                toggleFolder(folderElement, folderIcon);
+            });
+        });
+    })
+    .catch(error => console.error('Error loading folders and files:', error));
 }
 
 // Fonction pour créer un nouveau dossier
@@ -202,7 +207,8 @@ function createNewFolder(folderName, projectName, pseudo) {
     fetch('rest/dossiers', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': getAuthToken() // Add the auth token
         },
         body: JSON.stringify({ folderName: folderName, projectName: projectName, pseudo: pseudo })
     })
@@ -228,7 +234,8 @@ function createNewFile(fileName, folderId, projectName, pseudo) {
     fetch('rest/fichiers', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': getAuthToken() // Add the auth token
         },
         body: JSON.stringify({ fileName: fileName, folderId: folderId, projectName: projectName, pseudo: pseudo })
     })
@@ -252,30 +259,35 @@ function createNewFile(fileName, folderId, projectName, pseudo) {
 // Fonction pour charger le contenu d'un fichier
 function loadFileContent(fileId, fileName) {
     console.log('Loading content for fileId:', fileId); // Ajout de log
-    fetch('rest/fichiers/' + fileId)
-        .then(response => {
-            console.log('Response status:', response.status); // Ajout de log
-            if (!response.ok) {
-                return response.json().then(error => {
-                    throw new Error(error.error || 'Network response was not ok');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('File content received:', data); // Ajout de log
-            if (data && data.hasOwnProperty('contenu')) {
-                editor.setValue(data.contenu);
-                currentFileId = fileId;
-                console.log('File content set in editor:', data.contenu); // Ajout de log
-                var extension = fileName.split('.').pop();
-                var language = getEditorLanguage(extension);
-                monaco.editor.setModelLanguage(editor.getModel(), language);
-            } else {
-                console.error('File content property is missing.');
-            }
-        })
-        .catch(error => console.error('Error loading file content:', error));
+    fetch('rest/fichiers/' + fileId, {
+        method: 'GET',
+        headers: {
+            'Authorization': getAuthToken() // Add the auth token
+        }
+    })
+    .then(response => {
+        console.log('Response status:', response.status); // Ajout de log
+        if (!response.ok) {
+            return response.json().then(error => {
+                throw new Error(error.error || 'Network response was not ok');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('File content received:', data); // Ajout de log
+        if (data && data.hasOwnProperty('contenu')) {
+            editor.setValue(data.contenu);
+            currentFileId = fileId;
+            console.log('File content set in editor:', data.contenu); // Ajout de log
+            var extension = fileName.split('.').pop();
+            var language = getEditorLanguage(extension);
+            monaco.editor.setModelLanguage(editor.getModel(), language);
+        } else {
+            console.error('File content property is missing.');
+        }
+    })
+    .catch(error => console.error('Error loading file content:', error));
 }
 
 // Fonction pour sauvegarder le contenu du fichier
@@ -289,7 +301,8 @@ function saveFileContent() {
     fetch('rest/fichiers/' + currentFileId, {
         method: 'PUT',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': getAuthToken() // Add the auth token
         },
         body: JSON.stringify({ contenu: fileContent })
     })
@@ -326,3 +339,19 @@ require(['vs/editor/editor.main'], function () {
         theme: 'vs-dark'
     });
 });
+
+function getAuthToken() {
+    const name = "auth_token=";
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i].trim();
+        if (c.indexOf(name) === 0) {
+            const token = c.substring(name.length, c.length);
+            console.log('Auth token found:', token);
+            return token;
+        }
+    }
+    console.log('Auth token not found');
+    return "";
+}

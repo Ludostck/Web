@@ -67,21 +67,29 @@ main {
 }
 
 .project-button {
-    background-color: #3a3a3a;
-    color: #f0f0f0;
+    background-color: #252525; /* Couleur de fond plus sombre */
+    color: #f0f0f0; /* Couleur du texte */
     border: none;
     padding: 1rem 2rem; /* Plus gros */
     border-radius: 0.5rem; /* Bords arrondis */
     cursor: pointer;
-    font-size: 1.25rem; /* Police plus grande */
+    font-size: 2.25rem; /* Police plus grande */
     font-family: 'Arial', sans-serif; /* Police plus lisse */
     text-align: center;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Ombre pour effet de profondeur */
 }
 
 .project-button:hover {
-    background-color: #4a4a4a; /* Fond plus foncé au survol */
+    background-color: #333333; /* Fond plus foncé au survol */
     transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4); /* Ombre plus prononcée au survol */
+}
+
+.project-button i {
+    font-size: 1.5rem; /* Taille de l'icône légèrement plus grande */
+    vertical-align: middle; /* Aligne l'icône au milieu verticalement */
+    margin-right: 0.5rem; /* Espace entre l'icône et le texte */
 }
 
 .file-container {
