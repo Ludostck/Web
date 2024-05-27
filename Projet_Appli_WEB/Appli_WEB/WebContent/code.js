@@ -172,9 +172,20 @@ function loadFoldersAndFiles(projectName, pseudo) {
                 document.getElementById('create-file').dataset.folderId = folder.id;
             });
 
+            var deleteFolderButton = document.createElement('button');
+            deleteFolderButton.className = 'delete-button';
+            deleteFolderButton.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteFolderButton.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent toggling the folder
+                if (confirm('Voulez-vous vraiment supprimer ce dossier?')) {
+                    deleteFolder(folder.id, projectName, pseudo);
+                }
+            });
+
             folderHeader.appendChild(folderIcon);
             folderHeader.appendChild(folderNameElement);
             folderHeader.appendChild(addFileButton);
+            folderHeader.appendChild(deleteFolderButton);
 
             var filesListElement = document.createElement('div');
             filesListElement.className = 'files hidden';
@@ -184,7 +195,19 @@ function loadFoldersAndFiles(projectName, pseudo) {
                 fileElement.className = 'file';
                 var extension = file.nom.split('.').pop();
                 var iconClass = getFileIconClass(extension);
-                fileElement.innerHTML = '<i class="' + iconClass + ' file-icon"></i>' + file.nom;
+                fileElement.innerHTML = '<span><i class="' + iconClass + ' file-icon"></i>' + file.nom + '</span>';
+
+                var deleteFileButton = document.createElement('button');
+                deleteFileButton.className = 'delete-button';
+                deleteFileButton.innerHTML = '<i class="fas fa-trash"></i>';
+                deleteFileButton.addEventListener('click', function(event) {
+                    event.stopPropagation(); // Prevent selecting the file
+                    if (confirm('Voulez-vous vraiment supprimer ce fichier?')) {
+                        deleteFile(file.id, projectName, pseudo);
+                    }
+                });
+
+                fileElement.appendChild(deleteFileButton);
                 fileElement.dataset.fileId = file.id;
                 fileElement.addEventListener('click', selectFile);
                 filesListElement.appendChild(fileElement);
@@ -201,6 +224,7 @@ function loadFoldersAndFiles(projectName, pseudo) {
     })
     .catch(error => console.error('Error loading folders and files:', error));
 }
+
 
 // Fonction pour créer un nouveau dossier
 function createNewFolder(folderName, projectName, pseudo) {
@@ -328,6 +352,48 @@ function closeAllFolders() {
     allFolderIcons.forEach(function(icon) {
         icon.classList.remove('rotate-icon-down');
     });
+}
+
+// Fonction pour supprimer un dossier
+function deleteFolder(folderId, projectName, pseudo) {
+    fetch('rest/supprimer-dossier', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': getAuthToken() // Add the auth token
+        },
+        body: JSON.stringify({ folderId: folderId, projectName: projectName, pseudo: pseudo })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(error => {
+                throw new Error(error.error || 'Network response was not ok');
+            });
+        }
+        loadFoldersAndFiles(projectName, pseudo); // Reload folders to reflect the deletion
+    })
+    .catch(error => console.error('Error deleting folder:', error));
+}
+
+// Fonction pour supprimer un fichier
+function deleteFile(fileId, projectName, pseudo) {
+    fetch('rest/supprimer-fichier', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': getAuthToken() // Add the auth token
+        },
+        body: JSON.stringify({ fileId: fileId, projectName: projectName, pseudo: pseudo })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(error => {
+                throw new Error(error.error || 'Network response was not ok');
+            });
+        }
+        loadFoldersAndFiles(projectName, pseudo); // Reload folders to reflect the deletion
+    })
+    .catch(error => console.error('Error deleting file:', error));
 }
 
 // Configuration pour charger les fichiers nécessaires de Monaco Editor

@@ -28,23 +28,24 @@
     </div>
     <button id="back-button" onclick="history.back();">&larr; Retour</button>
 
-    <!-- Modal for new folder -->
-    <div id="new-folder-modal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close" id="close-new-folder-modal">&times;</span>
-            <input type="text" id="folder-name" placeholder="Nom du dossier">
-            <button id="create-folder">Créer</button>
-        </div>
-    </div>
+	<!-- Modal for new folder -->
+	<div id="new-folder-modal" class="modal hidden">
+	    <div class="modal-content">
+	        <span class="close" id="close-new-folder-modal">&times;</span>
+	        <input type="text" id="folder-name" placeholder="Nom du dossier">
+	        <button id="create-folder" class="modal-button">Créer</button>
+	    </div>
+	</div>
+	
+	<!-- Modal for new file -->
+	<div id="new-file-modal" class="modal hidden">
+	    <div class="modal-content">
+	        <span class="close" id="close-new-file-modal">&times;</span>
+	        <input type="text" id="file-name" placeholder="Nom du fichier">
+	        <button id="create-file" class="modal-button">Créer</button>
+	    </div>
+	</div>
 
-    <!-- Modal for new file -->
-    <div id="new-file-modal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close" id="close-new-file-modal">&times;</span>
-            <input type="text" id="file-name" placeholder="Nom du fichier">
-            <button id="create-file">Créer</button>
-        </div>
-    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
 

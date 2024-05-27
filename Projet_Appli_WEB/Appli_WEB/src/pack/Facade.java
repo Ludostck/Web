@@ -804,4 +804,97 @@ public class Facade {
             return false;
         }
     }
+    
+    
+    @POST
+    @Path("/supprimer-dossier")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response supprimerDossier(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .build();
+        }
+
+        Long folderId = Long.valueOf(requestData.get("folderId"));
+        String pseudo = requestData.get("pseudo");
+        String projectName = requestData.get("projectName");
+
+        try {
+            // Récupération de l'utilisateur par son pseudo
+            User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
+                          .setParameter("pseudo", pseudo)
+                          .getSingleResult();
+
+            // Récupération du dossier par son ID
+            Dossier dossier = em.find(Dossier.class, folderId);
+            if (dossier == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity("{\"error\": \"Folder not found.\"}")
+                               .build();
+            }
+
+            // Suppression du dossier
+            em.remove(dossier);
+
+            return Response.ok("{\"success\": true}").build();
+        } catch (NoResultException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                           .entity("{\"error\": \"User or folder not found.\"}")
+                           .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("{\"error\": \"Unable to delete folder.\"}")
+                           .build();
+        }
+    }
+    
+    @POST
+    @Path("/supprimer-fichier")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response supprimerFichier(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .build();
+        }
+
+        Long fileId = Long.valueOf(requestData.get("fileId"));
+        String pseudo = requestData.get("pseudo");
+        String projectName = requestData.get("projectName");
+
+        try {
+            // Récupération de l'utilisateur par son pseudo
+            User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
+                          .setParameter("pseudo", pseudo)
+                          .getSingleResult();
+
+            // Récupération du fichier par son ID
+            Fichier fichier = em.find(Fichier.class, fileId);
+            if (fichier == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity("{\"error\": \"File not found.\"}")
+                               .build();
+            }
+
+            // Suppression du fichier
+            em.remove(fichier);
+
+            return Response.ok("{\"success\": true}").build();
+        } catch (NoResultException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                           .entity("{\"error\": \"User or file not found.\"}")
+                           .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("{\"error\": \"Unable to delete file.\"}")
+                           .build();
+        }
+    }
+
+
 }

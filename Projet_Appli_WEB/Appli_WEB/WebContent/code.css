@@ -1,3 +1,13 @@
+/* Applique une couleur de fond globale */
+html, body {
+    font-family: Arial, sans-serif;
+    background-color: #121212; /* Fond noir */
+    color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+    height: 100%; /* Assure que le fond couvre toute la hauteur */
+}
+
 body, html {
     height: 100%;
     margin: 0;
@@ -84,6 +94,7 @@ body, html {
 .file {
     display: flex;
     align-items: center;
+    justify-content: space-between; /* Ajouté pour espacer le contenu */
     padding: 5px 20px;
     background-color: #2D2D2D;
     margin: 2px 0;
@@ -99,6 +110,7 @@ body, html {
 .file.selected {
     background-color: #505050;
 }
+
 
 #editor-toolbar {
     display: flex;
@@ -203,6 +215,19 @@ body, html {
     font-size: 1.2em;
 }
 
+.delete-button {
+    background: none;
+    border: none;
+    color: #D4D4D4;
+    cursor: pointer;
+    font-size: 1.2em;
+    transition: color 0.2s;
+}
+
+.delete-button:hover {
+    color: #FF5555;
+}
+
 /* Modal styles */
 .modal {
     display: none; /* Changed from flex to none */
@@ -225,16 +250,32 @@ body, html {
     text-align: center;
     width: 300px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    position: relative; /* Position relative ajoutée pour placer correctement le bouton close */
 }
 
 .modal-content input {
-    width: 100%;
+    width: calc(100% - 20px); /* Ajuste la largeur pour le padding */
     padding: 10px;
     margin: 10px 0;
     border: 1px solid #555;
     border-radius: 5px;
     background-color: #333;
     color: #D4D4D4;
+}
+
+.modal-button {
+    background-color: #007ACC;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    margin: 10px 0;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+
+.modal-button:hover {
+    background-color: #005EA2;
 }
 
 .close {
