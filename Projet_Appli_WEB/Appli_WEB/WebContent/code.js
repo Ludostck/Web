@@ -1,8 +1,18 @@
 window.onload = function() {
     var projectName = new URLSearchParams(window.location.search).get('projectName');
     var pseudo = new URLSearchParams(window.location.search).get('pseudo');
-    //document.getElementById('project-name').textContent = projectName;
     loadFoldersAndFiles(projectName, pseudo); // Charger les dossiers dans la sidebar
+
+    document.getElementById('new-folder').addEventListener('click', function() {
+        document.getElementById('new-folder-input').classList.toggle('hidden');
+    });
+
+    document.getElementById('create-folder').addEventListener('click', function() {
+        var folderName = document.getElementById('folder-name').value;
+        if (folderName) {
+            createNewFolder(folderName, projectName, pseudo);
+        }
+    });
 };
 
 // Fonction pour basculer la visibilité des fichiers dans un dossier
@@ -22,10 +32,9 @@ function selectFile(event) {
     event.stopPropagation();
 }
 
-//Fonction pour charger les dossiers et les fichiers depuis une API
 function loadFoldersAndFiles(projectName, pseudo) {
-	fetch('rest/dossiers?pseudo=' + encodeURIComponent(pseudo) + '&projectName=' + encodeURIComponent(projectName))
-    .then(response => {
+    fetch('rest/dossiers?pseudo=' + encodeURIComponent(pseudo) + '&projectName=' + encodeURIComponent(projectName))
+        .then(response => {
             if (!response.ok) {
                 return response.json().then(error => {
                     throw new Error(error.error || 'Network response was not ok');
@@ -34,24 +43,30 @@ function loadFoldersAndFiles(projectName, pseudo) {
             return response.json();
         })
         .then(data => {
+            console.log('Data received:', data); // Log the data to inspect its structure
+
+            if (!data || !data.dossiers) {
+                throw new Error('Invalid response structure: "dossiers" property is missing');
+            }
+
             var foldersContainer = document.getElementById('folders-container');
             foldersContainer.innerHTML = ''; // Efface les anciens dossiers
 
-            data.folders.forEach(folder => {
+            data.dossiers.forEach(folder => {
                 var folderElement = document.createElement('div');
                 folderElement.className = 'folder';
 
                 var folderNameElement = document.createElement('span');
                 folderNameElement.className = 'folder-name';
-                folderNameElement.textContent = folder.name;
+                folderNameElement.textContent = folder.nom;
 
                 var filesListElement = document.createElement('div');
                 filesListElement.className = 'files hidden';
 
-                folder.files.forEach(file => {
+                folder.fichiers.forEach(file => {
                     var fileElement = document.createElement('div');
                     fileElement.className = 'file';
-                    fileElement.textContent = file.name;
+                    fileElement.textContent = file.nom;
                     fileElement.addEventListener('click', selectFile);
                     filesListElement.appendChild(fileElement);
                 });
@@ -66,6 +81,31 @@ function loadFoldersAndFiles(projectName, pseudo) {
             });
         })
         .catch(error => console.error('Error loading folders and files:', error));
+}
+
+// Fonction pour créer un nouveau dossier
+function createNewFolder(folderName, projectName, pseudo) {
+    fetch('rest/dossiers', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name: folderName, projectName: projectName, pseudo: pseudo })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(error => {
+                throw new Error(error.error || 'Network response was not ok');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById('folder-name').value = ''; // Clear the input field
+        document.getElementById('new-folder-input').classList.add('hidden'); // Hide the input field
+        loadFoldersAndFiles(projectName, pseudo); // Reload folders to reflect the new folder
+    })
+    .catch(error => console.error('Error creating new folder:', error));
 }
 
 // Configuration pour charger les fichiers nécessaires de Monaco Editor

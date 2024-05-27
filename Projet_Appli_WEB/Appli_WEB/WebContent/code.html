@@ -12,6 +12,10 @@
         <aside id="sidebar">
             <button class="button-side" id="new-file">Nouveau Fichier</button>
             <button class="button-side" id="new-folder">Nouveau Dossier</button>
+            <div id="new-folder-input" class="hidden">
+                <input type="text" id="folder-name" placeholder="Nom du dossier">
+                <button id="create-folder">Créer</button>
+            </div>
             <div id="folders-container"></div>
         </aside>
         
@@ -28,6 +32,5 @@
     <button id="back-button">Retour</button>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
     <script src="code.js"></script>
-
 </body>
 </html>

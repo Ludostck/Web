@@ -19,6 +19,7 @@ import java.util.Base64;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -197,13 +198,27 @@ public class Facade {
             Projet newProject = new Projet();
             newProject.setTitle(projectName);
             newProject.setOwner(session);
-
             
+            
+            Dossier dossier = new Dossier();
+            dossier.setProjet(newProject);
+            dossier.setNom("dossier 1");
+            
+            
+            Fichier fichier = new Fichier();
+            fichier.setDossier(dossier);
+            fichier.setNom("fichier 1");
+            em.persist(fichier);
+            
+            em.persist(dossier);
             if (session.getProjets() == null) {
                 session.setProjets(new ArrayList<>());
             }
 
             session.getProjets().add(newProject);
+            
+
+            
             
             // Persister le projet, le dossier et le fichier
             em.persist(newProject);
@@ -259,6 +274,70 @@ public class Facade {
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
                            .entity("{\"error\": \"Unable to update pseudo.\"}")
+                           .build();
+        }
+    }
+
+    
+    @POST
+    @Path("/dossiers")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response createFolder(Map<String, String> requestData) {
+        String pseudo = requestData.get("pseudo");
+        String projectName = requestData.get("projectName");
+        String folderName = requestData.get("folderName");
+        
+        try {
+            // Récupération de l'utilisateur par son pseudo
+            User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
+                          .setParameter("pseudo", pseudo)
+                          .getSingleResult();
+
+            // Récupération de la session de l'utilisateur
+            Session session = user.getSession();
+            if (session == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity("{\"error\": \"Session not found for user.\"}")
+                               .build();
+            }
+
+            // Récupérer le projet à partir du nom du projet et de la session utilisateur
+            Projet projet = em.createQuery("SELECT p FROM Projet p WHERE p.title = :title AND p.owner = :owner", Projet.class)
+                              .setParameter("title", projectName)
+                              .setParameter("owner", session)
+                              .getSingleResult();
+
+            if (projet == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity("{\"error\": \"Project not found.\"}")
+                               .build();
+            }
+
+            // Création du nouveau dossier
+            Dossier newFolder = new Dossier();
+            newFolder.setNom(folderName);
+            newFolder.setProjet(projet);
+
+            // Ajout du dossier au projet
+            if (projet.getDossiers() == null) {
+                projet.setDossiers(new ArrayList<>());
+            }
+            projet.getDossiers().add(newFolder);
+
+            // Persister le dossier
+            em.persist(newFolder);
+            em.merge(projet);
+
+            return Response.ok("{\"success\": true}").build();
+        } catch (NoResultException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                           .entity("{\"error\": \"User or project not found.\"}")
+                           .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("{\"error\": \"Unable to create folder.\"}")
                            .build();
         }
     }
@@ -370,8 +449,22 @@ public class Facade {
             }
 
             List<Dossier> folders = projet.getDossiers();
+            List<Map<String, Object>> folderDetails = new ArrayList<>();
 
-            return Response.ok(folders).build();
+            for (Dossier dossier : folders) {
+                Map<String, Object> dossierMap = new HashMap<>();
+                dossierMap.put("id", dossier.getId());
+                dossierMap.put("nom", dossier.getNom());
+                dossierMap.put("enfants", dossier.getEnfants());
+                dossierMap.put("fichiers", dossier.getFichiers());
+                folderDetails.add(dossierMap);
+            }
+
+            // Create a map to hold the response
+            Map<String, Object> response = new HashMap<>();
+            response.put("dossiers", folderDetails);
+
+            return Response.ok(response).build();
         } catch (NoResultException e) {
             return Response.status(Response.Status.NOT_FOUND)
                            .entity("{\"error\": \"Project or user not found.\"}")
@@ -382,6 +475,7 @@ public class Facade {
                            .build();
         }
     }
+
 
 
 

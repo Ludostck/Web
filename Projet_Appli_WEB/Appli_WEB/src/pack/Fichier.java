@@ -8,9 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 
 @Entity
 public class Fichier {
@@ -26,61 +24,60 @@ public class Fichier {
     @JoinColumn(name = "projet_id")
     @JsonIgnore 
     private Projet projet;
-    
+
     @ManyToOne(fetch = FetchType.EAGER)
     private Dossier dossier;
-	
-	
-	public Fichier() {}
-	
-	
 
-	public long getId() {
-		return id;
-	}
+    public Fichier() {}
 
-	public void setId(long id) {
-		this.id = id;
-	}
+    public long getId() {
+        return id;
+    }
 
-	public String getNom() {
-		return nom;
-	}
+    public void setId(long id) {
+        this.id = id;
+    }
 
-	public void setNom(String nom) {
-		this.nom = nom;
-	}
+    public String getNom() {
+        return nom;
+    }
 
-	public String getType() {
-		return type;
-	}
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
 
-	public void setType(String type) {
-		this.type = type;
-	}
+    public String getType() {
+        return type;
+    }
 
-	public String getContenu() {
-		return contenu;
-	}
+    public void setType(String type) {
+        this.type = type;
+    }
 
-	public void setContenu(String contenu) {
-		this.contenu = contenu;
-	}
+    public String getContenu() {
+        return contenu;
+    }
 
-	public Projet getProjet() {
-		return projet;
-	}
+    public void setContenu(String contenu) {
+        this.contenu = contenu;
+    }
 
-	public void setProjet(Projet projet) {
-		this.projet = projet;
-	}
-	
-	public Dossier getDossier() {
-		return dossier;
-	}
+    public Projet getProjet() {
+        return projet;
+    }
 
-	public void setDossier(Dossier dossier) {
-		this.dossier = dossier;
-	}
+    public void setProjet(Projet projet) {
+        this.projet = projet;
+    }
 
+    public Dossier getDossier() {
+        return dossier;
+    }
+
+    public void setDossier(Dossier dossier) {
+        this.dossier = dossier;
+        if (dossier != null && !dossier.getFichiers().contains(this)) {
+            dossier.addFichier(this);
+        }
+    }
 }

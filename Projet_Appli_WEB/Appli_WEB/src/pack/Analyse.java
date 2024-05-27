@@ -25,7 +25,7 @@ public class Analyse {
     Date endTime;
     int actions;
     int errors;
-	
+
 
 	public int getId() {
 		return id;

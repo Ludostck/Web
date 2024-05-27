@@ -115,3 +115,12 @@ body, html {
 .python-code {
     color: #f7d85b;
 }
+
+.hidden {
+    display: none;
+}
+
+#new-folder-input {
+    margin: 10px 0;
+}
+
