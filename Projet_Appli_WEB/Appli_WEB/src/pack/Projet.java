@@ -1,6 +1,8 @@
 package pack;
 
 import javax.persistence.*;
+
+import java.util.Date;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -8,11 +10,15 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @Entity
 public class Projet {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String title;
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date creationDate;
 
     @ManyToOne
     @JsonBackReference
@@ -23,7 +29,10 @@ public class Projet {
     private List<Dossier> dossiers;
 
 
-    // getters and setters
+    // Constructeurs, getters et setters
+    public Projet() {
+        this.creationDate = new Date(); // Initialiser la date de création à la date actuelle
+    }
 
     public Long getId() {
         return id;
@@ -39,6 +48,14 @@ public class Projet {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+    
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
     }
 
     public Session getOwner() {

@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 
 
@@ -85,8 +86,7 @@ public class Facade {
     public Response createUser(User user) {
         try {
             LOGGER.info("Creating user: " + user.getPseudo());
-            
-            // Vérifier s'il y a déjà un utilisateur avec le même pseudo
+
             long count = em.createQuery("SELECT COUNT(u) FROM User u WHERE u.pseudo = :pseudo", Long.class)
                            .setParameter("pseudo", user.getPseudo())
                            .getSingleResult();
@@ -94,31 +94,25 @@ public class Facade {
                 LOGGER.warning("User with pseudo " + user.getPseudo() + " already exists.");
                 return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"User with this pseudo already exists.\"}").build();
             }
-            
-            // Chiffrer le mot de passe avec SHA-256
+
             String hashedPassword = hashPassword(user.getPassword());
             user.setPassword(hashedPassword);
+            user.setCreationDate(new Date());
+
             Session newSession = new Session();
             newSession.setHeureDebut(new Date());
             newSession.setUser(user);
+            em.persist(newSession);
 
             user.setSession(newSession);
-
-            em.persist(newSession);
             String authToken = generateToken();
             user.setAuth_token(authToken);
-            // Créez un cookie pour stocker le token
-            NewCookie authCookie = new NewCookie(AUTH_COOKIE_NAME, authToken, "/", null, null, NewCookie.DEFAULT_MAX_AGE, false, true);
 
+            NewCookie authCookie = new NewCookie("auth_token", authToken, "/", null, null, NewCookie.DEFAULT_MAX_AGE, false, true);
             em.persist(user);
 
-            em.flush();
-
-            
             LOGGER.info("User created successfully: " + user.getPseudo());
-            return Response.ok("{\"pseudo\": \"" + user.getPseudo() + "\"}")                        
-            		.cookie(authCookie)
-                    .build();
+            return Response.ok("{\"pseudo\": \"" + user.getPseudo() + "\"}").cookie(authCookie).build();
         } catch (Exception e) {
             LOGGER.severe("Error creating user: " + user.getPseudo() + " - " + e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Unable to create user.\"}").build();
@@ -629,6 +623,121 @@ public class Facade {
             return Response.status(Response.Status.BAD_REQUEST)
                            .entity("{\"error\": \"Unable to save file content.\"}")
                            .build();
+        }
+    }
+
+    @POST
+    @Path("/startSession")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response startSession(@QueryParam("pseudo") String pseudo) {
+        try {
+            User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
+                          .setParameter("pseudo", pseudo)
+                          .getSingleResult();
+
+            Session session = user.getSession();
+            if (session == null) {
+                session = new Session();
+                session.setUser(user);
+                user.setSession(session);
+            }
+            session.setHeureDebut(new Date());
+            em.merge(session);
+            em.merge(user);
+
+            return Response.ok("{\"success\": true}").build();
+        } catch (NoResultException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity("{\"error\": \"User not found.\"}").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Unable to start session.\"}").build();
+        }
+    }
+
+    @POST
+    @Path("/stopSession")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response stopSession(@QueryParam("pseudo") String pseudo) {
+        try {
+            User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
+                          .setParameter("pseudo", pseudo)
+                          .getSingleResult();
+
+            Session session = user.getSession();
+            if (session != null) {
+                session.setHeureFin(new Date());
+                session.updateTotalTimeSpent();
+                em.merge(session);
+            }
+
+            return Response.ok("{\"success\": true}").build();
+        } catch (NoResultException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity("{\"error\": \"User not found.\"}").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Unable to stop session.\"}").build();
+        }
+    }
+    
+    
+    @GET
+    @Path("/statistics")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response getUserStatistics(@QueryParam("pseudo") String pseudo) {
+        try {
+            User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
+                          .setParameter("pseudo", pseudo)
+                          .getSingleResult();
+
+            Session session = user.getSession();
+            if (session == null) {
+                return Response.status(Response.Status.NOT_FOUND).entity("{\"error\": \"Session not found for user.\"}").build();
+            }
+
+            List<Projet> projects = session.getProjets();
+            long totalFiles = projects.stream().flatMap(p -> p.getDossiers().stream()).flatMap(d -> d.getFichiers().stream()).count();
+            long totalSize = projects.stream().flatMap(p -> p.getDossiers().stream()).flatMap(d -> d.getFichiers().stream()).mapToLong(f -> f.getContenu().length()).sum();
+            Map<String, Long> fileTypes = projects.stream()
+                .flatMap(p -> p.getDossiers().stream())
+                .flatMap(d -> d.getFichiers().stream())
+                .collect(Collectors.groupingBy(Fichier::getType, Collectors.counting()));
+
+            Map<String, Object> statistics = new HashMap<>();
+            statistics.put("creationDate", user.getCreationDate());
+            statistics.put("totalTimeSpent", session.getTotalTimeSpent());
+            statistics.put("totalProjects", projects.size());
+            statistics.put("totalFiles", totalFiles);
+            statistics.put("totalSize", totalSize);
+            statistics.put("fileTypes", fileTypes);
+
+            return Response.ok(statistics).build();
+        } catch (NoResultException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity("{\"error\": \"User not found.\"}").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Unable to load statistics.\"}").build();
+        }
+    }
+    
+    @GET
+    @Path("/projects/{projectId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response getProjectDetails(@PathParam("projectId") Long projectId) {
+        try {
+            Projet project = em.find(Projet.class, projectId);
+            if (project == null) {
+                return Response.status(Response.Status.NOT_FOUND).entity("{\"error\": \"Project not found.\"}").build();
+            }
+            Map<String, Object> projectDetails = new HashMap<>();
+            projectDetails.put("creationDate", project.getCreationDate());
+            projectDetails.put("numberOfFiles", project.getDossiers().stream().flatMap(d -> d.getFichiers().stream()).count());
+
+            return Response.ok(projectDetails).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Unable to load project details.\"}").build();
         }
     }
 

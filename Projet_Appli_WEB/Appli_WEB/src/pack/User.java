@@ -1,6 +1,7 @@
 package pack;
 
 import java.util.Collection;
+import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -22,6 +23,9 @@ public class User {
 
     private String pseudo;
     private String password;
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date creationDate;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
@@ -30,7 +34,9 @@ public class User {
     private String auth_token;
     
 
-    // getters and setters
+    public User() {
+        this.creationDate = new Date(); // Initialiser la date de création à la date actuelle
+    }
 
     public Long getId() {
         return id;
@@ -71,6 +77,15 @@ public class User {
 	public void setAuth_token(String auth_token) {
 		this.auth_token = auth_token;
 	}
+	
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
 }
 	
 

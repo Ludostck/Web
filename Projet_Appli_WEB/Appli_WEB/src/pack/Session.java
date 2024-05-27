@@ -34,6 +34,8 @@ public class Session {
     @JsonIgnore
     private Configuration config;
     
+    private long totalTimeSpent;
+    
 
 
     public Long getId() {
@@ -82,6 +84,20 @@ public class Session {
     
     public void setConfiguration(Configuration config) {
     	this.config = config;
+    }
+    
+    public long getTotalTimeSpent() {
+        return totalTimeSpent;
+    }
+
+    public void setTotalTimeSpent(long totalTimeSpent) {
+        this.totalTimeSpent = totalTimeSpent;
+    }
+
+    public void updateTotalTimeSpent() {
+        if (this.heureDebut != null && this.heureFin != null) {
+            this.totalTimeSpent += this.heureFin.getTime() - this.heureDebut.getTime();
+        }
     }
 
 

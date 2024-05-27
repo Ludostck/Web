@@ -14,7 +14,7 @@ header {
     align-items: center;
     padding: 1rem;
     background-color: #1a1a1a;
-    width: 100%; /* Assure que l'en-tête occupe toute la largeur */
+    width: 100%; /* Assure que l'en-tete occupe toute la largeur */
 }
 
 .user-pseudo {
@@ -34,7 +34,7 @@ header {
 main {
     padding: 2rem;
     background-color: #121212; /* Assure que le fond est noir */
-    min-height: calc(100vh - 70px); /* Ajuste la hauteur minimum pour couvrir l'espace sous l'en-tête */
+    min-height: calc(100vh - 70px); /* Ajuste la hauteur minimum pour couvrir l'espace sous l'en-tete */
 }
 
 .controls {
@@ -66,19 +66,22 @@ main {
     gap: 1rem;
 }
 
-.project {
-    background-color: #282828;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    transition: transform 0.2s ease;
+.project-button {
+    background-color: #3a3a3a;
+    color: #f0f0f0;
+    border: none;
+    padding: 1rem 2rem; /* Plus gros */
+    border-radius: 0.5rem; /* Bords arrondis */
+    cursor: pointer;
+    font-size: 1.25rem; /* Police plus grande */
+    font-family: 'Arial', sans-serif; /* Police plus lisse */
+    text-align: center;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.project:hover {
+.project-button:hover {
+    background-color: #4a4a4a; /* Fond plus foncé au survol */
     transform: scale(1.05);
-}
-
-.project-title h3 {
-    margin: 0 0 1rem;
 }
 
 .file-container {
