@@ -1,45 +1,50 @@
 function loadUserProjects(pseudo) {
     console.log('Loading projects for pseudo:', pseudo); // Log au début du chargement des projets
-
-    fetch('rest/projects?pseudo=' + encodeURIComponent(pseudo))
-        .then(response => {
-            console.log('Received response from backend'); // Log après réception de la réponse
-            if (!response.ok) {
-                return response.json().then(error => {
-                    console.error('Error response from backend:', error); // Log en cas d'erreur de la réponse
-                    throw new Error(error.error || 'Network response was not ok');
+    fetch('rest/projects?pseudo=' + encodeURIComponent(pseudo), {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': getAuthToken() // Ajout de l'auth token
+        }
+    })
+    .then(response => {
+        console.log('Received response from backend'); // Log après réception de la réponse
+        if (!response.ok) {
+            return response.json().then(error => {
+                console.error('Error response from backend:', error); // Log en cas d'erreur de la réponse
+                throw new Error(error.error || 'Network response was not ok');
+            });
+        }
+        return response.json();
+    })
+    .then(projects => {
+        console.log("Projects received from backend:", projects); // Log les projets reçus
+        if (!Array.isArray(projects)) {
+            throw new Error('Response is not an array');
+        }
+        const projectsGrid = document.getElementById('projectsGrid');
+        projectsGrid.innerHTML = ''; // Vider le contenu précédent
+        if (projects.length === 0) {
+            projectsGrid.innerHTML = '<p>Aucun projet disponible</p>';
+        } else {
+            projects.forEach(project => {
+                console.log('Adding project to grid:', project.title); // Log chaque projet ajouté à la grille
+                const projectButton = document.createElement('button');
+                projectButton.className = 'project-button';
+                projectButton.textContent = project.title;
+                projectButton.addEventListener('click', function() {
+                    console.log('Project clicked:', project.title); // Log lors du clic sur un projet
+                    window.location.href = `code.html?pseudo=${encodeURIComponent(pseudo)}&projectName=${encodeURIComponent(project.title)}`;
                 });
-            }
-            return response.json();
-        })
-        .then(projects => {
-            console.log("Projects received from backend:", projects); // Log les projets reçus
-            if (!Array.isArray(projects)) {
-                throw new Error('Response is not an array');
-            }
-            const projectsGrid = document.getElementById('projectsGrid');
-            projectsGrid.innerHTML = ''; // Vider le contenu précédent
-            if (projects.length === 0) {
-                projectsGrid.innerHTML = '<p>Aucun projet disponible</p>';
-            } else {
-                projects.forEach(project => {
-                    console.log('Adding project to grid:', project.title); // Log chaque projet ajouté à la grille
-                    const projectButton = document.createElement('button');
-                    projectButton.className = 'project-button';
-                    projectButton.textContent = project.title;
-                    projectButton.addEventListener('click', function() {
-                        console.log('Project clicked:', project.title); // Log lors du clic sur un projet
-                        window.location.href = `code.html?pseudo=${encodeURIComponent(pseudo)}&projectName=${encodeURIComponent(project.title)}`;
-                    });
-                    projectsGrid.appendChild(projectButton);
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error loading projects:', error); // Log en cas d'erreur lors du chargement des projets
-            const projectsGrid = document.getElementById('projectsGrid');
-            projectsGrid.innerHTML = '<p>Erreur de chargement des projets</p>';
-        });
+                projectsGrid.appendChild(projectButton);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error loading projects:', error); // Log en cas d'erreur lors du chargement des projets
+        const projectsGrid = document.getElementById('projectsGrid');
+        projectsGrid.innerHTML = '<p>Erreur de chargement des projets</p>';
+    });
 }
 
 window.onload = function() {
@@ -82,7 +87,8 @@ function startSession(pseudo) {
     fetch('rest/startSession?pseudo=' + encodeURIComponent(pseudo), {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': getAuthToken() // Ajout de l'auth token
         }
     }).then(response => response.json())
       .then(data => console.log('Session started:', data))
@@ -93,19 +99,20 @@ function stopSession(pseudo) {
     fetch('rest/stopSession?pseudo=' + encodeURIComponent(pseudo), {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': getAuthToken() // Ajout de l'auth token
         }
     }).then(response => response.json())
       .then(data => console.log('Session stopped:', data))
       .catch(error => console.error('Error stopping session:', error));
 }
 
-
 function createProject(pseudo, projectName) {
     fetch('rest/projects', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': getAuthToken() // Ajout de l'auth token
         },
         body: JSON.stringify({ pseudo: pseudo, projectName: projectName })
     })
@@ -124,3 +131,23 @@ function createProject(pseudo, projectName) {
     })
     .catch(error => console.error('Error creating project:', error)); // Log en cas d'erreur lors de la création de projet
 }
+
+function getAuthToken() {
+    const name = "auth_token=";
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i].trim(); // Supprimez les espaces de début et de fin
+        if (c.indexOf(name) === 0) {
+            const token = c.substring(name.length, c.length);
+            console.log('Auth token found:', token); // Log le token trouvé
+            return token;
+        }
+    }
+    console.log('Auth token not found');
+    return "";
+}
+
+
+
+

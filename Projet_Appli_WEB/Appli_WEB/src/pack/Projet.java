@@ -27,6 +27,10 @@ public class Projet {
 
     @OneToMany(mappedBy = "projet", fetch = FetchType.EAGER)
     private List<Dossier> dossiers;
+    
+	@ManyToMany(mappedBy = "projets", fetch = FetchType.EAGER)
+	private List<MotCle> motscles;
+	
 
 
     // Constructeurs, getters et setters

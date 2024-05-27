@@ -58,7 +58,7 @@ public class Facade {
                 String authToken = generateToken();
                 foundUser.setAuth_token(authToken);
                 // Créez un cookie pour stocker le token
-                NewCookie authCookie = new NewCookie(AUTH_COOKIE_NAME, authToken, "/", null, null, NewCookie.DEFAULT_MAX_AGE, false, true);
+                NewCookie authCookie = new NewCookie(AUTH_COOKIE_NAME, authToken, "/", null, null, NewCookie.DEFAULT_MAX_AGE, false, false);
 
                 LOGGER.info("Login successful for user: " + foundUser.getPseudo());
                 return Response.ok("{\"success\": true, \"message\": \"Connexion réussie\", \"pseudo\": \"" + foundUser.getPseudo() + "\"}")
@@ -108,7 +108,7 @@ public class Facade {
             String authToken = generateToken();
             user.setAuth_token(authToken);
 
-            NewCookie authCookie = new NewCookie("auth_token", authToken, "/", null, null, NewCookie.DEFAULT_MAX_AGE, false, true);
+            NewCookie authCookie = new NewCookie("auth_token", authToken, "/", null, null, NewCookie.DEFAULT_MAX_AGE, false, false);
             em.persist(user);
 
             LOGGER.info("User created successfully: " + user.getPseudo());
@@ -123,11 +123,18 @@ public class Facade {
     @Path("/projects")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response getUserProjects(@QueryParam("pseudo") String pseudo) {
+    public Response getUserProjects(@QueryParam("pseudo") String pseudo, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         LOGGER.info("Received request to get projects for pseudo: " + pseudo);
+        
         try {
-        	
-            
+        	LOGGER.info("token facade" + authToken);
+            // Vérifier la validité du token
+            if (!isValidToken(authToken + "=")) {
+                return Response.status(Response.Status.UNAUTHORIZED)
+                               .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                               .build();
+            }
+
             // Récupération de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
@@ -144,8 +151,6 @@ public class Facade {
             }
             LOGGER.info("Found session for user: " + user.getPseudo() + " with session ID: " + session.getId());
 
-
-
             List<Projet> projects = session.getProjets();
             LOGGER.info("Number of projects found: " + projects.size());
             return Response.ok(projects).build();
@@ -161,6 +166,7 @@ public class Facade {
                            .build();
         }
     }
+
 
 
 
@@ -189,16 +195,25 @@ public class Facade {
                 em.merge(user);
             }
 
+            // Vérifier si le projet existe déjà
+            Long count = em.createQuery("SELECT COUNT(p) FROM Projet p WHERE p.title = :projectName AND p.owner.user = :user", Long.class)
+                           .setParameter("projectName", projectName)
+                           .setParameter("user", user)
+                           .getSingleResult();
+
+            if (count > 0) {
+                return Response.status(Response.Status.CONFLICT)
+                               .entity("{\"error\": \"Project already exists.\"}")
+                               .build();
+            }
+
             Projet newProject = new Projet();
             newProject.setTitle(projectName);
             newProject.setOwner(session);
             
-            
             Dossier dossier = new Dossier();
             dossier.setProjet(newProject);
             dossier.setNom(projectName);
-            
-            
             
             em.persist(dossier);
             if (session.getProjets() == null) {
@@ -206,10 +221,7 @@ public class Facade {
             }
 
             session.getProjets().add(newProject);
-            
 
-            
-            
             // Persister le projet, le dossier et le fichier
             em.persist(newProject);
             em.merge(session);
@@ -225,6 +237,7 @@ public class Facade {
                            .build();
         }
     }
+
 
 
 
@@ -567,13 +580,14 @@ public class Facade {
 
     @GET
     @Path("/validate-token")
-    private boolean isValidToken(@QueryParam("token") String token) {
+    @Produces(MediaType.APPLICATION_JSON)
+    public boolean isValidToken(@QueryParam("token") String token) {
         try {
             User user = em.createQuery("SELECT u FROM User u WHERE u.auth_token = :token", User.class)
                           .setParameter("token", token)
                           .getSingleResult();
             
-            return user!=null;
+            return user != null;
         } catch (NoResultException e) {
             return false;
         } catch (Exception e) {
@@ -581,6 +595,7 @@ public class Facade {
             return false;
         }
     }
+
 
     
     @GET
