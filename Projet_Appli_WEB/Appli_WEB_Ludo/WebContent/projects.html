@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projets de l'utilisateur</title>
+    <link rel="stylesheet" href="projects.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="user-pseudo" id="userPseudo">Chargement...</div>
+        <a href="login.html" class="back-button">
+            <i class="material-icons">arrow_back</i> Retour
+        </a>
+    </header>
+
+    <main>
+        <div class="controls">
+            <button id="config-button" class="control-button">
+                <i class="fas fa-cog"></i> Configuration
+            </button>
+            <button id="stats-button" class="control-button">
+                <i class="fas fa-chart-bar"></i> Statistiques
+            </button>
+        </div>
+        
+        <div class="projects-grid" id="projectsGrid">
+            <!-- Les projets seront ajoutés ici dynamiquement -->
+        </div>
+    </main>
+
+    <div id="new-project-modal" class="modal">
+        <div class="modal-content">
+            <h2>Nouveau Projet</h2>
+            <input type="text" id="new-project-name" placeholder="Nom du projet">
+            <button id="create-project-btn">Créer</button>
+        </div>
+    </div>
+
+    <script src="projects.js"></script>
+</body>
+</html>

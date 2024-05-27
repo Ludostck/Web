@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration</title>
+    <link rel="stylesheet" href="configuration.css">
+</head>
+<body>
+    <header>
+        <div class="back-button" onclick="history.back();">&larr; Retour</div>
+    </header>
+
+    <main>
+        <div class="configuration-form">
+            <h2>Configuration</h2>
+            
+            <div>
+                <h3>Changer le Pseudo</h3>
+                <label for="new-pseudo">Nouveau Pseudo:</label>
+                <input type="text" id="new-pseudo">
+                <button id="update-pseudo-btn">Mettre à jour Pseudo</button>
+            </div>
+            
+            <div>
+                <h3>Changer le Mot de Passe</h3>
+                <label for="old-password">Ancien Mot de Passe:</label>
+                <input type="password" id="old-password">
+                <label for="new-password">Nouveau Mot de Passe:</label>
+                <input type="password" id="new-password">
+                <button id="update-password-btn">Mettre à jour Mot de Passe</button>
+            </div>
+
+            <div>
+                <h3>Changer le Thème</h3>
+                <label for="theme">Thème:</label>
+                <select id="theme">
+                    <option value="true">Clair</option>
+                    <option value="false">Sombre</option>
+                </select>
+                <span id="current-theme">Thème actuel: Clair</span>
+                <button id="update-theme-btn">Mettre à jour Thème</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="configuration.js"></script>
+</body>
+</html>

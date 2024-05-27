@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un nouveau projet</title>
+    <link rel="stylesheet" href="projects.css">
+</head>
+<body>
+    <div id="back-button" class="back-button" onclick="history.back();">&larr; Retour</div>
+    <div class="new-project-container">
+        <h2>Nouveau Projet</h2>
+        <input type="text" id="project-name" placeholder="Nom du projet">
+        <button id="create-project-button">Créer</button>
+    </div>
+    <script>
+        document.getElementById('create-project-button').addEventListener('click', () => {
+            const projectName = document.getElementById('project-name').value.trim();
+            const pseudo = new URLSearchParams(window.location.search).get('pseudo');
+            if (projectName && pseudo) {
+                fetch('rest/projects', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name: projectName, pseudo: pseudo })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = 'editor.html?pseudo=' + encodeURIComponent(pseudo) + '&project=' + encodeURIComponent(projectName);
+                    } else {
+                        alert('Erreur lors de la création du projet');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Erreur lors de la création du projet');
+                });
+            } else {
+                alert('Veuillez entrer un nom de projet');
+            }
+        });
+    </script>
+</body>
+</html>

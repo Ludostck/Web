@@ -1,0 +1,135 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#container {
+    display: flex;
+    height: 100%;
+}
+
+#sidebar {
+    width: 300px;
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.folder-name {
+    cursor: pointer;
+    padding: 10px;
+    display: block;
+    background-color: #666;
+    margin-bottom: 5px;
+    margin-top: 10px;
+}
+
+.files.hidden {
+    display: none;
+}
+
+.file {
+    padding: 5px 20px;
+    background-color: #555;
+    margin: 2px 0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.file:hover {
+    background-color: #777;
+}
+
+.file.selected {
+    background-color: #888;
+}
+
+#editor-toolbar {
+    display: flex;
+    height: auto;
+    margin-bottom: 0px;
+    background-color: #555;
+    justify-content: space-around;
+}
+
+.button-top {
+    background-color: #007ACC;
+    color: white;
+    padding: 10px;
+    width: 15%;
+    height: 90%;
+    border: none;
+    cursor: pointer;
+    margin: 2px;
+}
+
+.button-side {
+    background-color: #007ACC;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    margin: 2px;
+}
+
+.button-top:hover, .button-side:hover {
+    background-color: #005EA2;
+}
+
+.editor-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0px;
+}
+
+#editor {
+    flex: 1;
+}
+
+#project-name-container {
+    text-align: center;
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    margin: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#project-name {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin: 0;
+    padding: 0;
+}
+
+
+#back-button {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    padding: 10px;
+    background-color: #666;
+    color: white;
+    cursor: pointer;
+}
+
+#back-button:hover {
+    background-color: #444;
+}
+
+.java-code {
+    color: #f75b5b;
+}
+
+.c-code {
+    color: #5b5bf7;
+}
+
+.python-code {
+    color: #f7d85b;
+}
