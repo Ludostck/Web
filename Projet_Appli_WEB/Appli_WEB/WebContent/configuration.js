@@ -66,25 +66,27 @@ window.onload = function() {
         .catch(error => console.error('Error updating password:', error));
     });
 
-    document.getElementById('update-theme-btn').addEventListener('click', function() {
-        var theme = document.getElementById('theme').value;
-
-        fetch('rest/updateTheme', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ pseudo: pseudo, theme: theme })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Thème mis à jour avec succès.');
-                document.getElementById('current-theme').textContent = 'Thème actuel: ' + (theme === 'true' ? 'Clair' : 'Sombre');
-            } else {
-                alert('Erreur: ' + data.error);
-            }
-        })
-        .catch(error => console.error('Error updating theme:', error));
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('update-theme-btn').addEventListener('click', function() {
+            var theme = document.getElementById('theme').value;
+    
+            fetch('rest/updateTheme', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ pseudo: pseudo, theme: theme })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Thème mis à jour avec succès.');
+                    document.getElementById('current-theme').textContent = 'Thème actuel: ' + (theme === 'true' ? 'Clair' : 'Sombre');
+                } else {
+                    alert('Erreur: ' + data.error);
+                }
+            })
+            .catch(error => console.error('Error updating theme:', error));
+        });
     });
 };
