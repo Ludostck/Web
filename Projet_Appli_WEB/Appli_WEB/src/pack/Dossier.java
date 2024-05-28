@@ -29,7 +29,7 @@ public class Dossier {
     @ManyToOne
     private Dossier parent;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "projet_id")
     @JsonBackReference
     private Projet projet;

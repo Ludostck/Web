@@ -35,7 +35,7 @@ public class User {
     
 
     public User() {
-        this.creationDate = new Date(); // Initialiser la date de création à la date actuelle
+        this.creationDate = new Date();
     }
 
     public Long getId() {

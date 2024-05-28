@@ -40,9 +40,8 @@ public class Facade {
     @Produces(MediaType.APPLICATION_JSON)
     public Response traiterConnexion(User user) {
         try {
-            LOGGER.info("Attempting login for user: " + user.getPseudo());
+            LOGGER.info("Tentative de connexion pour l'utilisateur : " + user.getPseudo());
             
-            // Chiffrer le mot de passe avec SHA-256
             String hashedPassword = hashPassword(user.getPassword());
             
             User foundUser = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo AND u.password = :password", User.class)
@@ -51,25 +50,23 @@ public class Facade {
                                .getSingleResult();
 
             if (foundUser != null) {
-                // Si la connexion est réussie, générez un token unique
                 String authToken = generateToken();
                 foundUser.setAuth_token(authToken);
-                // Créez un cookie pour stocker le token
                 NewCookie authCookie = new NewCookie(AUTH_COOKIE_NAME, authToken, "/", null, null, NewCookie.DEFAULT_MAX_AGE, false, false);
 
-                LOGGER.info("Login successful for user: " + foundUser.getPseudo());
+                LOGGER.info("Connexion réussie pour l'utilisateur : " + foundUser.getPseudo());
                 return Response.ok("{\"success\": true, \"message\": \"Connexion réussie\", \"pseudo\": \"" + foundUser.getPseudo() + "\"}")
                         .cookie(authCookie)
                         .build();
             } else {
-                LOGGER.warning("Login failed for user: " + user.getPseudo());
+                LOGGER.warning("Échec de la connexion pour l'utilisateur : " + user.getPseudo());
                 return Response.status(Response.Status.UNAUTHORIZED).entity("{\"success\": false, \"message\": \"Identifiant ou mot de passe incorrect\"}").build();
             }
         } catch (NoResultException e) {
-            LOGGER.warning("User not found for pseudo: " + user.getPseudo());
+            LOGGER.warning("Utilisateur non trouvé pour le pseudo : " + user.getPseudo());
             return Response.status(Response.Status.UNAUTHORIZED).entity("{\"success\": false, \"message\": \"Identifiant ou mot de passe incorrect\"}").build();
         } catch (Exception e) {
-            LOGGER.severe("Error during login for user: " + user.getPseudo() + " - " + e.getMessage());
+            LOGGER.severe("Erreur lors de la connexion pour l'utilisateur : " + user.getPseudo() + " - " + e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST).entity("{\"success\": false, \"message\": \"Erreur lors de la connexion\"}").build();
         }
     }
@@ -81,14 +78,14 @@ public class Facade {
     @Transactional
     public Response createUser(User user) {
         try {
-            LOGGER.info("Creating user: " + user.getPseudo());
+            LOGGER.info("Création de l'utilisateur : " + user.getPseudo());
 
             long count = em.createQuery("SELECT COUNT(u) FROM User u WHERE u.pseudo = :pseudo", Long.class)
                            .setParameter("pseudo", user.getPseudo())
                            .getSingleResult();
             if (count > 0) {
-                LOGGER.warning("User with pseudo " + user.getPseudo() + " already exists.");
-                return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"User with this pseudo already exists.\"}").build();
+                LOGGER.warning("Un utilisateur avec le pseudo " + user.getPseudo() + " existe déjà.");
+                return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Un utilisateur avec ce pseudo existe déjà.\"}").build();
             }
 
             String hashedPassword = hashPassword(user.getPassword());
@@ -107,11 +104,11 @@ public class Facade {
             NewCookie authCookie = new NewCookie("auth_token", authToken, "/", null, null, NewCookie.DEFAULT_MAX_AGE, false, false);
             em.persist(user);
 
-            LOGGER.info("User created successfully: " + user.getPseudo());
+            LOGGER.info("Utilisateur créé avec succès : " + user.getPseudo());
             return Response.ok("{\"pseudo\": \"" + user.getPseudo() + "\"}").cookie(authCookie).build();
         } catch (Exception e) {
-            LOGGER.severe("Error creating user: " + user.getPseudo() + " - " + e.getMessage());
-            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Unable to create user.\"}").build();
+            LOGGER.severe("Erreur lors de la création de l'utilisateur : " + user.getPseudo() + " - " + e.getMessage());
+            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Impossible de créer l'utilisateur.\"}").build();
         }
     }
 
@@ -120,44 +117,41 @@ public class Facade {
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     public Response getUserProjects(@QueryParam("pseudo") String pseudo, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
-        LOGGER.info("Received request to get projects for pseudo: " + pseudo);
+        LOGGER.info("Demande de projets pour le pseudo : " + pseudo);
         
         try {
-            // Vérifier la validité du token
             if (!isValidToken(authToken + "=")) {
                 return Response.status(Response.Status.UNAUTHORIZED)
-                               .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                               .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                                .build();
             }
 
-            // Récupération de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
                           .getSingleResult();
-            LOGGER.info("Found user: " + user.getPseudo() + " with ID: " + user.getId());
+            LOGGER.info("Utilisateur trouvé : " + user.getPseudo() + " avec ID : " + user.getId());
 
-            // Récupération de la session de l'utilisateur
             Session session = user.getSession();
             if (session == null) {
-                LOGGER.warning("No session found for user: " + user.getPseudo());
+                LOGGER.warning("Aucune session trouvée pour l'utilisateur : " + user.getPseudo());
                 return Response.status(Response.Status.NOT_FOUND)
-                               .entity("{\"error\": \"Session not found for user.\"}")
+                               .entity("{\"error\": \"Session non trouvée pour l'utilisateur.\"}")
                                .build();
             }
-            LOGGER.info("Found session for user: " + user.getPseudo() + " with session ID: " + session.getId());
+            LOGGER.info("Session trouvée pour l'utilisateur : " + user.getPseudo() + " avec ID de session : " + session.getId());
 
             List<Projet> projects = session.getProjets();
-            LOGGER.info("Number of projects found: " + projects.size());
+            LOGGER.info("Nombre de projets trouvés : " + projects.size());
             return Response.ok(projects).build();
         } catch (NoResultException e) {
-            LOGGER.warning("User or session not found for pseudo: " + pseudo);
+            LOGGER.warning("Utilisateur ou session non trouvé pour le pseudo : " + pseudo);
             return Response.status(Response.Status.NOT_FOUND)
-                           .entity("{\"error\": \"User or session not found.\"}")
+                           .entity("{\"error\": \"Utilisateur ou session non trouvé.\"}")
                            .build();
         } catch (Exception e) {
-            LOGGER.severe("Error loading projects for pseudo: " + pseudo + " - " + e.getMessage());
+            LOGGER.severe("Erreur lors du chargement des projets pour le pseudo : " + pseudo + " - " + e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST)
-                           .entity("{\"error\": \"Unable to load projects.\"}")
+                           .entity("{\"error\": \"Impossible de charger les projets.\"}")
                            .build();
         }
     }
@@ -170,7 +164,7 @@ public class Facade {
     public Response createProject(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         if (!isValidToken(authToken + "=")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                            .build();
         }
 
@@ -192,7 +186,6 @@ public class Facade {
                 em.merge(user);
             }
 
-            // Vérifier si le projet existe déjà
             Long count = em.createQuery("SELECT COUNT(p) FROM Projet p WHERE p.title = :projectName AND p.owner.user = :user", Long.class)
                            .setParameter("projectName", projectName)
                            .setParameter("user", user)
@@ -200,13 +193,14 @@ public class Facade {
 
             if (count > 0) {
                 return Response.status(Response.Status.CONFLICT)
-                               .entity("{\"error\": \"Project already exists.\"}")
+                               .entity("{\"error\": \"Le projet existe déjà.\"}")
                                .build();
             }
 
             Projet newProject = new Projet();
             newProject.setTitle(projectName);
             newProject.setOwner(session);
+            newProject.setPublic(true);
             
             Dossier dossier = new Dossier();
             dossier.setProjet(newProject);
@@ -219,18 +213,17 @@ public class Facade {
 
             session.getProjets().add(newProject);
 
-            // Persister le projet, le dossier et le fichier
             em.persist(newProject);
             em.merge(session);
 
             return Response.ok("{\"success\": true}").build();
         } catch (NoResultException e) {
             return Response.status(Response.Status.NOT_FOUND)
-                           .entity("{\"error\": \"User not found.\"}")
+                           .entity("{\"error\": \"Utilisateur non trouvé.\"}")
                            .build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                           .entity("{\"error\": \"Unable to create project.\"}")
+                           .entity("{\"error\": \"Impossible de créer le projet.\"}")
                            .build();
         }
     }
@@ -243,7 +236,7 @@ public class Facade {
     public Response updatePseudo(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         if (!isValidToken(authToken + "=")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                            .build();
         }
 
@@ -251,13 +244,12 @@ public class Facade {
         String newPseudo = requestData.get("newPseudo");
 
         try {
-            // Check if new pseudo already exists
             long count = em.createQuery("SELECT COUNT(u) FROM User u WHERE u.pseudo = :newPseudo", Long.class)
                            .setParameter("newPseudo", newPseudo)
                            .getSingleResult();
             if (count > 0) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                               .entity("{\"error\": \"Pseudo already exists.\"}")
+                               .entity("{\"error\": \"Le pseudo existe déjà.\"}")
                                .build();
             }
 
@@ -271,11 +263,11 @@ public class Facade {
             return Response.ok("{\"success\": true}").build();
         } catch (NoResultException e) {
             return Response.status(Response.Status.NOT_FOUND)
-                           .entity("{\"error\": \"User not found.\"}")
+                           .entity("{\"error\": \"Utilisateur non trouvé.\"}")
                            .build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                           .entity("{\"error\": \"Unable to update pseudo.\"}")
+                           .entity("{\"error\": \"Impossible de mettre à jour le pseudo.\"}")
                            .build();
         }
     }
@@ -288,7 +280,7 @@ public class Facade {
     public Response createFolder(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         if (!isValidToken(authToken + "=")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                            .build();
         }
 
@@ -297,20 +289,17 @@ public class Facade {
         String folderName = requestData.get("folderName");
         
         try {
-            // Récupération de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
                           .getSingleResult();
 
-            // Récupération de la session de l'utilisateur
             Session session = user.getSession();
             if (session == null) {
                 return Response.status(Response.Status.NOT_FOUND)
-                               .entity("{\"error\": \"Session not found for user.\"}")
+                               .entity("{\"error\": \"Session non trouvée pour l'utilisateur.\"}")
                                .build();
             }
 
-            // Récupérer le projet à partir du nom du projet et de la session utilisateur
             Projet projet = em.createQuery("SELECT p FROM Projet p WHERE p.title = :title AND p.owner = :owner", Projet.class)
                               .setParameter("title", projectName)
                               .setParameter("owner", session)
@@ -318,32 +307,30 @@ public class Facade {
 
             if (projet == null) {
                 return Response.status(Response.Status.NOT_FOUND)
-                               .entity("{\"error\": \"Project not found.\"}")
+                               .entity("{\"error\": \"Projet non trouvé.\"}")
                                .build();
             }
 
-            // Création du nouveau dossier
             Dossier newFolder = new Dossier();
             newFolder.setNom(folderName);
+            newFolder.setProjet(projet);
 
-            // Ajout du dossier au projet
             if (projet.getDossiers() == null) {
                 projet.setDossiers(new ArrayList<>());
             }
             projet.getDossiers().add(newFolder);
 
-            // Persister le dossier
             em.persist(newFolder);
             em.merge(projet);
 
             return Response.ok("{\"success\": true}").build();
         } catch (NoResultException e) {
             return Response.status(Response.Status.NOT_FOUND)
-                           .entity("{\"error\": \"User or project not found.\"}")
+                           .entity("{\"error\": \"Utilisateur ou projet non trouvé.\"}")
                            .build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                           .entity("{\"error\": \"Unable to create folder.\"}")
+                           .entity("{\"error\": \"Impossible de créer le dossier.\"}")
                            .build();
         }
     }
@@ -356,7 +343,7 @@ public class Facade {
     public Response createFile(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         if (!isValidToken(authToken + "=")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                            .build();
         }
 
@@ -366,46 +353,39 @@ public class Facade {
         Long folderId = Long.valueOf(requestData.get("folderId"));
 
         try {
-            // Récupération de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
                           .getSingleResult();
 
-            // Récupération de la session de l'utilisateur
             Session session = user.getSession();
             if (session == null) {
                 return Response.status(Response.Status.NOT_FOUND)
-                               .entity("{\"error\": \"Session not found for user.\"}")
+                               .entity("{\"error\": \"Session non trouvée pour l'utilisateur.\"}")
                                .build();
             }
 
-
-
-            // Récupérer le dossier par son ID
             Dossier dossier = em.find(Dossier.class, folderId);
             if (dossier == null) {
                 return Response.status(Response.Status.NOT_FOUND)
-                               .entity("{\"error\": \"Folder not found.\"}")
+                               .entity("{\"error\": \"Dossier non trouvé.\"}")
                                .build();
             }
 
-            // Création du nouveau fichier
             Fichier newFile = new Fichier();
             newFile.setNom(fileName);
             newFile.setDossier(dossier);
             newFile.setContenu("test");
 
-            // Persister le fichier
             em.persist(newFile);
 
             return Response.ok("{\"success\": true}").build();
         } catch (NoResultException e) {
             return Response.status(Response.Status.NOT_FOUND)
-                           .entity("{\"error\": \"User or project not found.\"}")
+                           .entity("{\"error\": \"Utilisateur ou projet non trouvé.\"}")
                            .build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                           .entity("{\"error\": \"Unable to create file.\"}")
+                           .entity("{\"error\": \"Impossible de créer le fichier.\"}")
                            .build();
         }
     }
@@ -418,7 +398,7 @@ public class Facade {
     public Response updatePassword(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         if (!isValidToken(authToken + "=")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                            .build();
         }
 
@@ -427,7 +407,6 @@ public class Facade {
         String newPassword = requestData.get("newPassword");
 
         try {
-            // Chiffrer les mots de passe avec SHA-256
             String hashedOldPassword = hashPassword(oldPassword);
             String hashedNewPassword = hashPassword(newPassword);
 
@@ -442,11 +421,11 @@ public class Facade {
             return Response.ok("{\"success\": true}").build();
         } catch (NoResultException e) {
             return Response.status(Response.Status.NOT_FOUND)
-                           .entity("{\"error\": \"User not found or incorrect password.\"}")
+                           .entity("{\"error\": \"Utilisateur non trouvé ou mot de passe incorrect.\"}")
                            .build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                           .entity("{\"error\": \"Unable to update password.\"}")
+                           .entity("{\"error\": \"Impossible de mettre à jour le mot de passe.\"}")
                            .build();
         }
     }
@@ -459,7 +438,7 @@ public class Facade {
     public Response updateTheme(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         if (!isValidToken(authToken + "=")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                            .build();
         }
 
@@ -484,11 +463,11 @@ public class Facade {
             return Response.ok("{\"success\": true}").build();
         } catch (NoResultException e) {
             return Response.status(Response.Status.NOT_FOUND)
-                           .entity("{\"error\": \"User not found.\"}")
+                           .entity("{\"error\": \"Utilisateur non trouvé.\"}")
                            .build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                           .entity("{\"error\": \"Unable to update theme.\"}")
+                           .entity("{\"error\": \"Impossible de mettre à jour le thème.\"}")
                            .build();
         }
     }
@@ -499,27 +478,24 @@ public class Facade {
     public Response getProjectFolders(@QueryParam("pseudo") String pseudo, @QueryParam("projectName") String projectName, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         if (!isValidToken(authToken + "=")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                            .build();
         }
 
         try {
-            // Récupération de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
                           .getSingleResult();
-            LOGGER.info("Found user: " + user.getPseudo() + " with ID: " + user.getId());
+            LOGGER.info("Utilisateur trouvé : " + user.getPseudo() + " avec ID : " + user.getId());
 
-            // Récupération de la session de l'utilisateur
             Session session = user.getSession();
             if (session == null) {
-                LOGGER.warning("No session found for user: " + user.getPseudo());
+                LOGGER.warning("Aucune session trouvée pour l'utilisateur : " + user.getPseudo());
                 return Response.status(Response.Status.NOT_FOUND)
-                               .entity("{\"error\": \"Session not found for user.\"}")
+                               .entity("{\"error\": \"Session non trouvée pour l'utilisateur.\"}")
                                .build();
             }
 
-            // Récupérer le projet à partir du nom du projet et de la session utilisateur
             Projet projet = em.createQuery("SELECT p FROM Projet p WHERE p.title = :title AND p.owner = :owner", Projet.class)
                               .setParameter("title", projectName)
                               .setParameter("owner", session)
@@ -527,7 +503,7 @@ public class Facade {
 
             if (projet == null) {
                 return Response.status(Response.Status.NOT_FOUND)
-                               .entity("{\"error\": \"Project not found.\"}")
+                               .entity("{\"error\": \"Projet non trouvé.\"}")
                                .build();
             }
 
@@ -543,18 +519,17 @@ public class Facade {
                 folderDetails.add(dossierMap);
             }
 
-            // Create a map to hold the response
             Map<String, Object> response = new HashMap<>();
             response.put("dossiers", folderDetails);
 
             return Response.ok(response).build();
         } catch (NoResultException e) {
             return Response.status(Response.Status.NOT_FOUND)
-                           .entity("{\"error\": \"Project or user not found.\"}")
+                           .entity("{\"error\": \"Projet ou utilisateur non trouvé.\"}")
                            .build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                           .entity("{\"error\": \"Unable to load folders.\"}")
+                           .entity("{\"error\": \"Impossible de charger les dossiers.\"}")
                            .build();
         }
     }
@@ -565,7 +540,7 @@ public class Facade {
     public Response getFileContent(@PathParam("id") Long id, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         if (!isValidToken(authToken + "=")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                            .build();
         }
 
@@ -573,13 +548,13 @@ public class Facade {
             Fichier fichier = em.find(Fichier.class, id);
             if (fichier == null) {
                 return Response.status(Response.Status.NOT_FOUND)
-                               .entity("{\"error\": \"File not found.\"}")
+                               .entity("{\"error\": \"Fichier non trouvé.\"}")
                                .build();
             }
             return Response.ok(fichier).build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                           .entity("{\"error\": \"Unable to load file content.\"}")
+                           .entity("{\"error\": \"Impossible de charger le contenu du fichier.\"}")
                            .build();
         }
     }
@@ -592,7 +567,7 @@ public class Facade {
     public Response updateFileContent(@PathParam("id") Long id, Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         if (!isValidToken(authToken + "=")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                            .build();
         }
 
@@ -600,7 +575,7 @@ public class Facade {
             Fichier fichier = em.find(Fichier.class, id);
             if (fichier == null) {
                 return Response.status(Response.Status.NOT_FOUND)
-                               .entity("{\"error\": \"File not found.\"}")
+                               .entity("{\"error\": \"Fichier non trouvé.\"}")
                                .build();
             }
             fichier.setContenu(requestData.get("contenu"));
@@ -608,7 +583,7 @@ public class Facade {
             return Response.ok("{\"success\": true}").build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                           .entity("{\"error\": \"Unable to save file content.\"}")
+                           .entity("{\"error\": \"Impossible d'enregistrer le contenu du fichier.\"}")
                            .build();
         }
     }
@@ -621,7 +596,7 @@ public class Facade {
     public Response startSession(@QueryParam("pseudo") String pseudo, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         if (!isValidToken(authToken + "=")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                            .build();
         }
 
@@ -642,9 +617,9 @@ public class Facade {
 
             return Response.ok("{\"success\": true}").build();
         } catch (NoResultException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity("{\"error\": \"User not found.\"}").build();
+            return Response.status(Response.Status.NOT_FOUND).entity("{\"error\": \"Utilisateur non trouvé.\"}").build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Unable to start session.\"}").build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Impossible de démarrer la session.\"}").build();
         }
     }
 
@@ -656,7 +631,7 @@ public class Facade {
     public Response stopSession(@QueryParam("pseudo") String pseudo, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         if (!isValidToken(authToken + "=")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                            .build();
         }
 
@@ -674,9 +649,9 @@ public class Facade {
 
             return Response.ok("{\"success\": true}").build();
         } catch (NoResultException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity("{\"error\": \"User not found.\"}").build();
+            return Response.status(Response.Status.NOT_FOUND).entity("{\"error\": \"Utilisateur non trouvé.\"}").build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Unable to stop session.\"}").build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Impossible d'arrêter la session.\"}").build();
         }
     }
 
@@ -687,7 +662,7 @@ public class Facade {
     public Response getUserStatistics(@QueryParam("pseudo") String pseudo, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         if (!isValidToken(authToken + "=")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                            .build();
         }
 
@@ -698,7 +673,7 @@ public class Facade {
 
             Session session = user.getSession();
             if (session == null) {
-                return Response.status(Response.Status.NOT_FOUND).entity("{\"error\": \"Session not found for user.\"}").build();
+                return Response.status(Response.Status.NOT_FOUND).entity("{\"error\": \"Session non trouvée pour l'utilisateur.\"}").build();
             }
 
             List<Projet> projects = session.getProjets();
@@ -719,9 +694,9 @@ public class Facade {
 
             return Response.ok(statistics).build();
         } catch (NoResultException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity("{\"error\": \"User not found.\"}").build();
+            return Response.status(Response.Status.NOT_FOUND).entity("{\"error\": \"Utilisateur non trouvé.\"}").build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Unable to load statistics.\"}").build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Impossible de charger les statistiques.\"}").build();
         }
     }
 
@@ -732,14 +707,14 @@ public class Facade {
     public Response getProjectDetails(@PathParam("projectId") Long projectId, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         if (!isValidToken(authToken + "=")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                            .build();
         }
 
         try {
             Projet project = em.find(Projet.class, projectId);
             if (project == null) {
-                return Response.status(Response.Status.NOT_FOUND).entity("{\"error\": \"Project not found.\"}").build();
+                return Response.status(Response.Status.NOT_FOUND).entity("{\"error\": \"Projet non trouvé.\"}").build();
             }
             Map<String, Object> projectDetails = new HashMap<>();
             projectDetails.put("creationDate", project.getCreationDate());
@@ -747,11 +722,10 @@ public class Facade {
 
             return Response.ok(projectDetails).build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Unable to load project details.\"}").build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Impossible de charger les détails du projet.\"}").build();
         }
     }
 
-    // Méthode pour hasher le mot de passe avec SHA-256
     private String hashPassword(String password) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hash = digest.digest(password.getBytes());
@@ -788,11 +762,10 @@ public class Facade {
         } catch (NoResultException e) {
             return false;
         } catch (Exception e) {
-            LOGGER.severe("Error validating token: " + e.getMessage());
+            LOGGER.severe("Erreur lors de la validation du token : " + e.getMessage());
             return false;
         }
     }
-    
     
     @POST
     @Path("/supprimer-dossier")
@@ -802,39 +775,36 @@ public class Facade {
     public Response supprimerDossier(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         if (!isValidToken(authToken + "=")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                            .build();
         }
 
         Long folderId = Long.valueOf(requestData.get("folderId"));
         String pseudo = requestData.get("pseudo");
-        String projectName = requestData.get("projectName");
+        
 
         try {
-            // Récupération de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
                           .getSingleResult();
 
-            // Récupération du dossier par son ID
             Dossier dossier = em.find(Dossier.class, folderId);
             if (dossier == null) {
                 return Response.status(Response.Status.NOT_FOUND)
-                               .entity("{\"error\": \"Folder not found.\"}")
+                               .entity("{\"error\": \"Dossier non trouvé.\"}")
                                .build();
             }
 
-            // Suppression du dossier
             em.remove(dossier);
 
             return Response.ok("{\"success\": true}").build();
         } catch (NoResultException e) {
             return Response.status(Response.Status.NOT_FOUND)
-                           .entity("{\"error\": \"User or folder not found.\"}")
+                           .entity("{\"error\": \"Utilisateur ou dossier non trouvé.\"}")
                            .build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                           .entity("{\"error\": \"Unable to delete folder.\"}")
+                           .entity("{\"error\": \"Impossible de supprimer le dossier.\"}")
                            .build();
         }
     }
@@ -847,7 +817,7 @@ public class Facade {
     public Response supprimerFichier(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         if (!isValidToken(authToken + "=")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                            .build();
         }
 
@@ -856,30 +826,27 @@ public class Facade {
         String projectName = requestData.get("projectName");
 
         try {
-            // Récupération de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
                           .getSingleResult();
 
-            // Récupération du fichier par son ID
             Fichier fichier = em.find(Fichier.class, fileId);
             if (fichier == null) {
                 return Response.status(Response.Status.NOT_FOUND)
-                               .entity("{\"error\": \"File not found.\"}")
+                               .entity("{\"error\": \"Fichier non trouvé.\"}")
                                .build();
             }
 
-            // Suppression du fichier
             em.remove(fichier);
 
             return Response.ok("{\"success\": true}").build();
         } catch (NoResultException e) {
             return Response.status(Response.Status.NOT_FOUND)
-                           .entity("{\"error\": \"User or file not found.\"}")
+                           .entity("{\"error\": \"Utilisateur ou fichier non trouvé.\"}")
                            .build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                           .entity("{\"error\": \"Unable to delete file.\"}")
+                           .entity("{\"error\": \"Impossible de supprimer le fichier.\"}")
                            .build();
         }
     }
@@ -892,7 +859,7 @@ public class Facade {
     public Response supprimerProjet(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
         if (!isValidToken(authToken + "=")) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
                            .build();
         }
 
@@ -900,20 +867,17 @@ public class Facade {
         String projectName = requestData.get("projectName");
 
         try {
-            // Récupération de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
                           .getSingleResult();
 
-            // Récupération de la session de l'utilisateur
             Session session = user.getSession();
             if (session == null) {
                 return Response.status(Response.Status.NOT_FOUND)
-                               .entity("{\"error\": \"Session not found for user.\"}")
+                               .entity("{\"error\": \"Session non trouvée pour l'utilisateur.\"}")
                                .build();
             }
 
-            // Récupérer le projet à partir du nom du projet et de la session utilisateur
             Projet projet = em.createQuery("SELECT p FROM Projet p WHERE p.title = :title AND p.owner = :owner", Projet.class)
                               .setParameter("title", projectName)
                               .setParameter("owner", session)
@@ -921,11 +885,10 @@ public class Facade {
 
             if (projet == null) {
                 return Response.status(Response.Status.NOT_FOUND)
-                               .entity("{\"error\": \"Project not found.\"}")
+                               .entity("{\"error\": \"Projet non trouvé.\"}")
                                .build();
             }
 
-            // Suppression de tous les dossiers et fichiers associés au projet
             for (Dossier dossier : projet.getDossiers()) {
                 for (Fichier fichier : dossier.getFichiers()) {
                     em.remove(fichier);
@@ -933,22 +896,115 @@ public class Facade {
                 em.remove(dossier);
             }
 
-            // Suppression du projet
             em.remove(projet);
 
             return Response.ok("{\"success\": true}").build();
         } catch (NoResultException e) {
             return Response.status(Response.Status.NOT_FOUND)
-                           .entity("{\"error\": \"User or project not found.\"}")
+                           .entity("{\"error\": \"Utilisateur ou projet non trouvé.\"}")
                            .build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                           .entity("{\"error\": \"Unable to delete project.\"}")
+                           .entity("{\"error\": \"Impossible de supprimer le projet.\"}")
+                           .build();
+        }
+    }
+    
+    @GET
+    @Path("/public-projects")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPublicProjects() {
+        try {
+            List<Projet> publicProjects = em.createQuery("SELECT p FROM Projet p WHERE p.isPublic = true", Projet.class)
+                                            .getResultList();
+            return Response.ok(publicProjects).build();
+        } catch (Exception e) {
+            LOGGER.severe("Erreur lors du chargement des projets publics : " + e.getMessage());
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("{\"error\": \"Impossible de charger les projets publics.\"}")
                            .build();
         }
     }
 
+    @GET
+    @Path("/public-projects/search")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchPublicProjects(@QueryParam("keyword") String keyword) {
+        try {
+            String queryStr = "SELECT p FROM Projet p JOIN p.motscles m WHERE p.isPublic = true";
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                queryStr += " AND m.motcle = :keyword";
+            }
+            
+            TypedQuery<Projet> query = em.createQuery(queryStr, Projet.class);
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                query.setParameter("keyword", keyword);
+            }
+            
+            List<Projet> publicProjects = query.getResultList();
+            return Response.ok(publicProjects).build();
+        } catch (Exception e) {
+            LOGGER.severe("Erreur lors de la recherche de projets publics : " + e.getMessage());
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("{\"error\": \"Impossible de rechercher des projets publics.\"}")
+                           .build();
+        }
+    }
 
+    @POST
+    @Path("/keywords")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response addKeywordToProject(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Token invalide. Veuillez vous reconnecter.\"}")
+                           .build();
+        }
 
+        String keyword = requestData.get("keyword");
+        String pseudo = requestData.get("pseudo");
+        String projectName = requestData.get("projectName");
 
+        try {
+            User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
+                          .setParameter("pseudo", pseudo)
+                          .getSingleResult();
+
+            Session session = user.getSession();
+            Projet projet = em.createQuery("SELECT p FROM Projet p WHERE p.title = :title AND p.owner = :owner", Projet.class)
+                              .setParameter("title", projectName)
+                              .setParameter("owner", session)
+                              .getSingleResult();
+
+            MotCle motCle = em.find(MotCle.class, keyword);
+            if (motCle == null) {
+            	
+                motCle = new MotCle();
+                motCle.setMotcle(keyword);
+                motCle.setProjet(new ArrayList<Projet>());
+                em.persist(motCle);
+            }
+
+            if (!projet.getMotscles().contains(motCle)) {
+                projet.getMotscles().add(motCle);
+                
+                motCle.getProjets().add(projet);
+                
+                em.merge(projet);
+                em.merge(motCle);
+            }
+
+            return Response.ok("{\"success\": true}").build();
+        } catch (NoResultException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                           .entity("{\"error\": \"Utilisateur ou projet non trouvé.\"}")
+                           .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("{\"error\": \"Impossible d'ajouter le mot-clé.\"}")
+                           .build();
+        }
+    }
 }

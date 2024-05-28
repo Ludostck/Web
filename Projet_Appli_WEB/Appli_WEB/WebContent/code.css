@@ -1,11 +1,10 @@
-/* Applique une couleur de fond globale */
 html, body {
     font-family: Arial, sans-serif;
-    background-color: #121212; /* Fond noir */
+    background-color: #121212; 
     color: #f0f0f0;
     margin: 0;
     padding: 0;
-    height: 100%; /* Assure que le fond couvre toute la hauteur */
+    height: 100%;
 }
 
 body, html {
@@ -70,7 +69,7 @@ body, html {
     display: flex;
     align-items: center;
     flex: 1;
-    gap: 5px; /* Ajoute de l'espace entre les éléments */
+    gap: 5px; 
 }
 .add-file-button, .folder-toggle-icon {
     background: none;
@@ -94,7 +93,7 @@ body, html {
 .file {
     display: flex;
     align-items: center;
-    justify-content: space-between; /* Ajouté pour espacer le contenu */
+    justify-content: space-between;
     padding: 5px 20px;
     background-color: #2D2D2D;
     margin: 2px 0;
@@ -202,7 +201,7 @@ body, html {
 }
 
 .rotate-icon {
-    margin-right: 10px; /* Espace supplémentaire pour l'icône de rotation */
+    margin-right: 10px; 
     transition: transform 0.3s;
 }
 
@@ -211,7 +210,7 @@ body, html {
 }
 
 .file-icon {
-    margin-right: 10px; /* Espace supplémentaire pour l'icône de fichier */
+    margin-right: 10px;
     font-size: 1.2em;
 }
 
@@ -228,9 +227,8 @@ body, html {
     color: #FF5555;
 }
 
-/* Modal styles */
 .modal {
-    display: none; /* Changed from flex to none */
+    display: none; 
     justify-content: center;
     align-items: center;
     position: fixed;
@@ -250,11 +248,11 @@ body, html {
     text-align: center;
     width: 300px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    position: relative; /* Position relative ajoutée pour placer correctement le bouton close */
+    position: relative;
 }
 
 .modal-content input {
-    width: calc(100% - 20px); /* Ajuste la largeur pour le padding */
+    width: calc(100% - 20px);
     padding: 10px;
     margin: 10px 0;
     border: 1px solid #555;
@@ -262,7 +260,6 @@ body, html {
     background-color: #333;
     color: #D4D4D4;
 }
-
 .modal-button {
     background-color: #007ACC;
     color: white;

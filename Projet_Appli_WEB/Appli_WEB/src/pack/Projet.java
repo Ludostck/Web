@@ -5,6 +5,7 @@ import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
@@ -24,18 +25,20 @@ public class Projet {
     @JsonBackReference
     private Session owner;
 
+    private boolean isPublic;
 
     @OneToMany(mappedBy = "projet", fetch = FetchType.EAGER)
+    @JsonIgnore
     private List<Dossier> dossiers;
     
 	@ManyToMany(mappedBy = "projets", fetch = FetchType.EAGER)
+	@JsonIgnore
 	private List<MotCle> motscles;
 	
 
 
-    // Constructeurs, getters et setters
     public Projet() {
-        this.creationDate = new Date(); // Initialiser la date de création à la date actuelle
+        this.creationDate = new Date(); 
     }
 
     public Long getId() {
@@ -52,6 +55,14 @@ public class Projet {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+    
+    public List<MotCle> getMotscles(){
+    	return motscles;
+    }
+    
+    public void setMotscles(List<MotCle> motscles) {
+    	this.motscles = motscles;
     }
     
     public Date getCreationDate() {
@@ -77,4 +88,14 @@ public class Projet {
     public void setDossiers(List<Dossier> dossiers) {
         this.dossiers = dossiers;
     }
+
+	public boolean isPublic() {
+		return isPublic;
+	}
+
+	public void setPublic(boolean isPublic) {
+		this.isPublic = isPublic;
+	}
+    
+    
 }

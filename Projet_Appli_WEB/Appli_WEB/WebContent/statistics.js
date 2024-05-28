@@ -24,7 +24,7 @@ function loadStatistics(pseudo) {
 
             loadProjectSelector(statistics.projects);
         })
-        .catch(error => console.error('Error loading statistics:', error));
+        .catch(error => console.error('Erreur statistiques:', error));
 }
 
 function formatTime(milliseconds) {
@@ -76,5 +76,5 @@ function loadProjectDetails(projectId) {
                 <p>Nombre de fichiers: ${project.numberOfFiles}</p>
             `;
         })
-        .catch(error => console.error('Error loading project details:', error));
+        .catch(error => console.error('erreur chargement projet:', error));
 }

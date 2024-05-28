@@ -15,6 +15,7 @@
                 <span id="project-name-display">Nom du Projet</span>
                 <button class="button-side" id="new-folder"><i class="mdi mdi-folder-plus"></i></button>
                 <button class="button-side" id="close-all-folders"><i class="mdi mdi-folder-remove"></i></button>
+                <button class="button-side" id="add-keyword"><i class="mdi mdi-tag-plus"></i></button>
             </div>
             <div id="folders-container"></div>
         </aside>
@@ -28,24 +29,32 @@
     </div>
     <button id="back-button" onclick="history.back();">&larr; Retour</button>
 
-	<!-- Modal for new folder -->
-	<div id="new-folder-modal" class="modal hidden">
-	    <div class="modal-content">
-	        <span class="close" id="close-new-folder-modal">&times;</span>
-	        <input type="text" id="folder-name" placeholder="Nom du dossier">
-	        <button id="create-folder" class="modal-button">Créer</button>
-	    </div>
-	</div>
-	
-	<!-- Modal for new file -->
-	<div id="new-file-modal" class="modal hidden">
-	    <div class="modal-content">
-	        <span class="close" id="close-new-file-modal">&times;</span>
-	        <input type="text" id="file-name" placeholder="Nom du fichier">
-	        <button id="create-file" class="modal-button">Créer</button>
-	    </div>
-	</div>
+    <!-- Modal for new folder -->
+    <div id="new-folder-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" id="close-new-folder-modal">&times;</span>
+            <input type="text" id="folder-name" placeholder="Nom du dossier">
+            <button id="create-folder" class="modal-button">Créer</button>
+        </div>
+    </div>
 
+    <!-- Modal for new file -->
+    <div id="new-file-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" id="close-new-file-modal">&times;</span>
+            <input type="text" id="file-name" placeholder="Nom du fichier">
+            <button id="create-file" class="modal-button">Créer</button>
+        </div>
+    </div>
+
+    <!-- Modal for new keyword -->
+    <div id="new-keyword-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" id="close-new-keyword-modal">&times;</span>
+            <input type="text" id="keyword" placeholder="Mot-clé">
+            <button id="create-keyword" class="modal-button">Ajouter</button>
+        </div>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
 

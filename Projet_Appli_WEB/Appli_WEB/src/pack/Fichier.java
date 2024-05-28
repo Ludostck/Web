@@ -61,8 +61,6 @@ public class Fichier {
         this.contenu = contenu;
     }
 
-
-
     public Dossier getDossier() {
         return dossier;
     }

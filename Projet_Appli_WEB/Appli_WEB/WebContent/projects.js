@@ -1,5 +1,4 @@
 function loadUserProjects(pseudo) {
-    console.log('Loading projects for pseudo:', pseudo);
     fetch('rest/projects?pseudo=' + encodeURIComponent(pseudo), {
         method: 'GET',
         headers: {
@@ -8,19 +7,17 @@ function loadUserProjects(pseudo) {
         }
     })
     .then(response => {
-        console.log('Received response from backend');
         if (!response.ok) {
             return response.json().then(error => {
-                console.error('Error response from backend:', error);
-                throw new Error(error.error || 'Network response was not ok');
+                console.error('erreur backend:', error);
+                throw new Error(error.error || 'erreur reseau');
             });
         }
         return response.json();
     })
     .then(projects => {
-        console.log("Projects received from backend:", projects);
         if (!Array.isArray(projects)) {
-            throw new Error('Response is not an array');
+            throw new Error('erreur');
         }
         const projectsGrid = document.getElementById('projectsGrid');
         projectsGrid.innerHTML = '';
@@ -28,7 +25,6 @@ function loadUserProjects(pseudo) {
             projectsGrid.innerHTML = '<p>Aucun projet disponible</p>';
         } else {
             projects.forEach(project => {
-                console.log('Adding project to grid:', project.title);
                 const projectContainer = document.createElement('div');
                 projectContainer.className = 'project-container';
 
@@ -38,12 +34,11 @@ function loadUserProjects(pseudo) {
                 
                 projectButton.addEventListener('click', function(event) {
                     if (event.target.classList.contains('delete-button')) {
-                        event.stopPropagation(); // Prevent the click event from propagating to the project button
+                        event.stopPropagation(); 
                         if (confirm(`Voulez-vous vraiment supprimer le projet "${project.title}"?`)) {
                             deleteProject(pseudo, project.title);
                         }
                     } else {
-                        console.log('Project clicked:', project.title);
                         window.location.href = `code.html?pseudo=${encodeURIComponent(pseudo)}&projectName=${encodeURIComponent(project.title)}`;
                     }
                 });
@@ -54,7 +49,7 @@ function loadUserProjects(pseudo) {
         }
     })
     .catch(error => {
-        console.error('Error loading projects:', error);
+        console.error('erreur chargement projets:', error);
         const projectsGrid = document.getElementById('projectsGrid');
         projectsGrid.innerHTML = '<p>Erreur de chargement des projets</p>';
     });
@@ -70,25 +65,22 @@ function deleteProject(pseudo, projectName) {
         body: JSON.stringify({ pseudo: pseudo, projectName: projectName })
     })
     .then(response => {
-        console.log('Response status:', response.status);
         if (!response.ok) {
             return response.json().then(error => {
-                throw new Error(error.error || 'Network response was not ok');
+                throw new Error(error.error || 'erreur reseau');
             });
         }
         return response.json();
     })
     .then(data => {
-        console.log('Delete response data:', data);
         if (data.success) {
-            console.log('Project deleted successfully:', projectName);
             loadUserProjects(pseudo);
         } else {
-            console.error('Error deleting project:', data);
+            console.error('erreur suppression:', data);
             alert("Erreur lors de la suppression du projet.");
         }
     })
-    .catch(error => console.error('Error deleting project:', error));
+    .catch(error => console.error('erreur suppression:', error));
 }
 
 
@@ -96,7 +88,6 @@ function deleteProject(pseudo, projectName) {
 window.onload = function() {
     var pseudo = new URLSearchParams(window.location.search).get('pseudo');
     if (pseudo) {
-        console.log('Pseudo found in URL:', pseudo);
         document.getElementById('userPseudo').textContent = pseudo;
         startSession(pseudo);
         loadUserProjects(pseudo);
@@ -107,7 +98,6 @@ window.onload = function() {
     document.getElementById('create-project-btn').addEventListener('click', function() {
         var projectName = document.getElementById('new-project-name').value;
         if (projectName) {
-            console.log('Creating new project:', projectName);
             createProject(pseudo, projectName);
         } else {
             alert("Veuillez entrer un nom de projet.");
@@ -115,13 +105,15 @@ window.onload = function() {
     });
 
     document.getElementById('config-button').addEventListener('click', function() {
-        console.log('Configuration button clicked');
         window.location.href = 'configuration.html?pseudo=' + pseudo;
     });
 
     document.getElementById('stats-button').addEventListener('click', function() {
-        console.log('Statistics button clicked');
         window.location.href = 'statistics.html?pseudo=' + pseudo;
+    });
+
+    document.getElementById('public-projects-button').addEventListener('click', function() {
+        window.location.href = 'public-projects.html';
     });
 
     window.onunload = function() {
@@ -150,7 +142,7 @@ function stopSession(pseudo) {
         }
     }).then(response => response.json())
       .then(data => console.log('Session stopped:', data))
-      .catch(error => console.error('Error stopping session:', error));
+      .catch(error => console.error('erreur session:', error));
 }
 
 function createProject(pseudo, projectName) {
@@ -163,19 +155,16 @@ function createProject(pseudo, projectName) {
         body: JSON.stringify({ pseudo: pseudo, projectName: projectName })
     })
     .then(response => {
-        console.log('Received response from backend for project creation');
         return response.json();
     })
     .then(data => {
         if (data.success) {
-            console.log('Project created successfully:', projectName);
             window.location.href = 'code.html?pseudo=' + pseudo + '&projectName=' + projectName;
         } else {
-            console.error('Error creating project:', data);
             alert("Erreur lors de la création du projet.");
         }
     })
-    .catch(error => console.error('Error creating project:', error));
+    .catch(error => console.error('erreur creation projet:', error));
 }
 
 function getAuthToken() {
@@ -186,10 +175,8 @@ function getAuthToken() {
         let c = ca[i].trim();
         if (c.indexOf(name) === 0) {
             const token = c.substring(name.length, c.length);
-            console.log('Auth token found:', token);
             return token;
         }
     }
-    console.log('Auth token not found');
     return "";
 }

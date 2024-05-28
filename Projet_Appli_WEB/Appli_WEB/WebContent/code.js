@@ -2,9 +2,9 @@ window.onload = function() {
     var projectName = new URLSearchParams(window.location.search).get('projectName');
     var pseudo = new URLSearchParams(window.location.search).get('pseudo');
     
-    document.getElementById('project-name-display').textContent = projectName; // Affiche le nom du projet
+    document.getElementById('project-name-display').textContent = projectName;
 
-    loadFoldersAndFiles(projectName, pseudo); // Charger les dossiers dans la sidebar
+    loadFoldersAndFiles(projectName, pseudo); 
 
     document.getElementById('new-folder').addEventListener('click', function() {
         document.getElementById('new-folder-modal').classList.remove('hidden');
@@ -18,11 +18,10 @@ window.onload = function() {
 
     document.getElementById('create-folder').addEventListener('click', function() {
         var folderName = document.getElementById('folder-name').value;
-        console.log('Folder name entered:', folderName); // Log the folder name to debug
         if (folderName) {
             createNewFolder(folderName, projectName, pseudo);
         } else {
-            alert("Folder name cannot be empty.");
+            alert("Le nom du dossier ne peut pas être vide.");
         }
     });
 
@@ -38,18 +37,62 @@ window.onload = function() {
     document.getElementById('create-file').addEventListener('click', function() {
         var fileName = document.getElementById('file-name').value;
         var folderId = document.getElementById('create-file').dataset.folderId;
-        console.log('File name entered:', fileName); // Log the file name to debug
         if (fileName) {
             createNewFile(fileName, folderId, projectName, pseudo);
         } else {
-            alert("File name cannot be empty.");
+            alert("Le nom du fichier ne peut pas être vide.");
         }
     });
 
     document.getElementById('close-all-folders').addEventListener('click', function() {
         closeAllFolders();
     });
+
+    document.getElementById('add-keyword').addEventListener('click', function() {
+        document.getElementById('new-keyword-modal').classList.remove('hidden');
+        document.getElementById('new-keyword-modal').style.display = 'flex';
+    });
+
+    document.getElementById('close-new-keyword-modal').addEventListener('click', function() {
+        document.getElementById('new-keyword-modal').classList.add('hidden');
+        document.getElementById('new-keyword-modal').style.display = 'none';
+    });
+
+    document.getElementById('create-keyword').addEventListener('click', function() {
+        var keyword = document.getElementById('keyword').value;
+        if (keyword) {
+            addKeywordToProject(keyword, projectName, pseudo);
+        } else {
+            alert("Le mot-clé ne peut pas être vide.");
+        }
+    });
 };
+
+function addKeywordToProject(keyword, projectName, pseudo) {
+    fetch('rest/keywords', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': getAuthToken()
+        },
+        body: JSON.stringify({ keyword: keyword, projectName: projectName, pseudo: pseudo })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(error => {
+                throw new Error(error.error || 'erreur réseau.');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById('keyword').value = ''; 
+        document.getElementById('new-keyword-modal').classList.add('hidden'); 
+        document.getElementById('new-keyword-modal').style.display = 'none'; 
+        alert("Mot-clé ajouté.");
+    })
+    .catch(error => console.error('erreur ajout mot clé :', error));
+}
 
 var currentFileId = null;
 var editor;
@@ -102,14 +145,12 @@ function getEditorLanguage(extension) {
     }
 }
 
-// Fonction pour basculer la visibilité des fichiers dans un dossier
 function toggleFolder(folderElement, iconElement) {
     var filesList = folderElement.querySelector(".files");
     filesList.classList.toggle("hidden");
     iconElement.classList.toggle("rotate-icon-down");
 }
 
-// Fonction pour gérer la sélection d'un fichier
 function selectFile(event) {
     var allFiles = document.querySelectorAll('.file');
     allFiles.forEach(function(file) {
@@ -127,26 +168,24 @@ function loadFoldersAndFiles(projectName, pseudo) {
     fetch('rest/dossiers?pseudo=' + encodeURIComponent(pseudo) + '&projectName=' + encodeURIComponent(projectName), {
         method: 'GET',
         headers: {
-            'Authorization': getAuthToken() // Add the auth token
+            'Authorization': getAuthToken()
         }
     })
     .then(response => {
         if (!response.ok) {
             return response.json().then(error => {
-                throw new Error(error.error || 'Network response was not ok');
+                throw new Error(error.error || 'erreur réseau.');
             });
         }
         return response.json();
     })
     .then(data => {
-        console.log('Data received:', data); // Log the data to inspect its structure
-
         if (!data || !data.dossiers) {
-            throw new Error('Invalid response structure: "dossiers" property is missing');
+            throw new Error('propriété "dossiers" manquante.');
         }
 
         var foldersContainer = document.getElementById('folders-container');
-        foldersContainer.innerHTML = ''; // Efface les anciens dossiers
+        foldersContainer.innerHTML = '';
 
         data.dossiers.forEach(folder => {
             var folderElement = document.createElement('div');
@@ -166,7 +205,7 @@ function loadFoldersAndFiles(projectName, pseudo) {
             addFileButton.className = 'add-file-button';
             addFileButton.innerHTML = '<i class="fas fa-plus"></i>';
             addFileButton.addEventListener('click', function(event) {
-                event.stopPropagation(); // Prevent toggling the folder
+                event.stopPropagation(); 
                 document.getElementById('new-file-modal').classList.remove('hidden');
                 document.getElementById('new-file-modal').style.display = 'flex';
                 document.getElementById('create-file').dataset.folderId = folder.id;
@@ -176,7 +215,7 @@ function loadFoldersAndFiles(projectName, pseudo) {
             deleteFolderButton.className = 'delete-button';
             deleteFolderButton.innerHTML = '<i class="fas fa-trash"></i>';
             deleteFolderButton.addEventListener('click', function(event) {
-                event.stopPropagation(); // Prevent toggling the folder
+                event.stopPropagation(); 
                 if (confirm('Voulez-vous vraiment supprimer ce dossier?')) {
                     deleteFolder(folder.id, projectName, pseudo);
                 }
@@ -201,7 +240,7 @@ function loadFoldersAndFiles(projectName, pseudo) {
                 deleteFileButton.className = 'delete-button';
                 deleteFileButton.innerHTML = '<i class="fas fa-trash"></i>';
                 deleteFileButton.addEventListener('click', function(event) {
-                    event.stopPropagation(); // Prevent selecting the file
+                    event.stopPropagation(); 
                     if (confirm('Voulez-vous vraiment supprimer ce fichier?')) {
                         deleteFile(file.id, projectName, pseudo);
                     }
@@ -222,102 +261,93 @@ function loadFoldersAndFiles(projectName, pseudo) {
             });
         });
     })
-    .catch(error => console.error('Error loading folders and files:', error));
+    .catch(error => console.error('Erreur chargement dossiers/fichiers :', error));
 }
 
-
-// Fonction pour créer un nouveau dossier
 function createNewFolder(folderName, projectName, pseudo) {
     fetch('rest/dossiers', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': getAuthToken() // Add the auth token
+            'Authorization': getAuthToken()
         },
         body: JSON.stringify({ folderName: folderName, projectName: projectName, pseudo: pseudo })
     })
     .then(response => {
         if (!response.ok) {
             return response.json().then(error => {
-                throw new Error(error.error || 'Network response was not ok');
+                throw new Error(error.error || 'erreur réseau.');
             });
         }
         return response.json();
     })
     .then(data => {
-        document.getElementById('folder-name').value = ''; // Clear the input field
-        document.getElementById('new-folder-modal').classList.add('hidden'); // Hide the modal
-        document.getElementById('new-folder-modal').style.display = 'none'; // Hide the modal
-        loadFoldersAndFiles(projectName, pseudo); // Reload folders to reflect the new folder
+        document.getElementById('folder-name').value = ''; 
+        document.getElementById('new-folder-modal').classList.add('hidden'); 
+        document.getElementById('new-folder-modal').style.display = 'none';
+        loadFoldersAndFiles(projectName, pseudo); 
     })
-    .catch(error => console.error('Error creating new folder:', error));
+    .catch(error => console.error('Erreur création dossier :', error));
 }
 
-// Fonction pour créer un nouveau fichier
 function createNewFile(fileName, folderId, projectName, pseudo) {
     fetch('rest/fichiers', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': getAuthToken() // Add the auth token
+            'Authorization': getAuthToken()
         },
         body: JSON.stringify({ fileName: fileName, folderId: folderId, projectName: projectName, pseudo: pseudo })
     })
     .then(response => {
         if (!response.ok) {
             return response.json().then(error => {
-                throw new Error(error.error || 'Network response was not ok');
+                throw new Error(error.error || 'erreur réseau.');
             });
         }
         return response.json();
     })
     .then(data => {
-        document.getElementById('file-name').value = ''; // Clear the input field
-        document.getElementById('new-file-modal').classList.add('hidden'); // Hide the modal
-        document.getElementById('new-file-modal').style.display = 'none'; // Hide the modal
-        loadFoldersAndFiles(projectName, pseudo); // Reload folders to reflect the new file
+        document.getElementById('file-name').value = ''; 
+        document.getElementById('new-file-modal').classList.add('hidden'); 
+        document.getElementById('new-file-modal').style.display = 'none'; 
+        loadFoldersAndFiles(projectName, pseudo); 
     })
-    .catch(error => console.error('Error creating new file:', error));
+    .catch(error => console.error('Erreur création fichier :', error));
 }
 
-// Fonction pour charger le contenu d'un fichier
 function loadFileContent(fileId, fileName) {
-    console.log('Loading content for fileId:', fileId); // Ajout de log
     fetch('rest/fichiers/' + fileId, {
         method: 'GET',
         headers: {
-            'Authorization': getAuthToken() // Add the auth token
+            'Authorization': getAuthToken()
         }
     })
     .then(response => {
-        console.log('Response status:', response.status); // Ajout de log
         if (!response.ok) {
             return response.json().then(error => {
-                throw new Error(error.error || 'Network response was not ok');
+                throw new Error(error.error || 'erreur réseau.');
             });
         }
         return response.json();
     })
     .then(data => {
-        console.log('File content received:', data); // Ajout de log
         if (data && data.hasOwnProperty('contenu')) {
             editor.setValue(data.contenu);
             currentFileId = fileId;
-            console.log('File content set in editor:', data.contenu); // Ajout de log
             var extension = fileName.split('.').pop();
             var language = getEditorLanguage(extension);
             monaco.editor.setModelLanguage(editor.getModel(), language);
         } else {
-            console.error('File content property is missing.');
+            console.error('contenu du fichier manquant.');
         }
     })
-    .catch(error => console.error('Error loading file content:', error));
+    .catch(error => console.error('Erreur lors du chargement du contenu du fichier :', error));
 }
 
-// Fonction pour sauvegarder le contenu du fichier
 function saveFileContent() {
     if (!currentFileId) {
-        alert("No file selected to save.");
+        alert("Aucun fichier sélectionné à enregistrer.");
         return;
     }
 
@@ -326,22 +356,21 @@ function saveFileContent() {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': getAuthToken() // Add the auth token
+            'Authorization': getAuthToken()
         },
         body: JSON.stringify({ contenu: fileContent })
     })
     .then(response => {
         if (!response.ok) {
             return response.json().then(error => {
-                throw new Error(error.error || 'Network response was not ok');
+                throw new Error(error.error || 'erreur réseau.');
             });
         }
-        alert("File saved successfully.");
+        alert("Fichier enregistré avec succès.");
     })
-    .catch(error => console.error('Error saving file content:', error));
+    .catch(error => console.error('Erreur enregistrement fichier :', error));
 }
 
-// Fonction pour fermer tous les dossiers ouverts
 function closeAllFolders() {
     var allFilesLists = document.querySelectorAll('.files');
     allFilesLists.forEach(function(filesList) {
@@ -354,49 +383,46 @@ function closeAllFolders() {
     });
 }
 
-// Fonction pour supprimer un dossier
 function deleteFolder(folderId, projectName, pseudo) {
     fetch('rest/supprimer-dossier', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': getAuthToken() // Add the auth token
+            'Authorization': getAuthToken()
         },
         body: JSON.stringify({ folderId: folderId, projectName: projectName, pseudo: pseudo })
     })
     .then(response => {
         if (!response.ok) {
             return response.json().then(error => {
-                throw new Error(error.error || 'Network response was not ok');
+                throw new Error(error.error || 'erreur réseau.');
             });
         }
-        loadFoldersAndFiles(projectName, pseudo); // Reload folders to reflect the deletion
+        loadFoldersAndFiles(projectName, pseudo); 
     })
-    .catch(error => console.error('Error deleting folder:', error));
+    .catch(error => console.error('erreur suppression  dossier :', error));
 }
 
-// Fonction pour supprimer un fichier
 function deleteFile(fileId, projectName, pseudo) {
     fetch('rest/supprimer-fichier', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': getAuthToken() // Add the auth token
+            'Authorization': getAuthToken()
         },
         body: JSON.stringify({ fileId: fileId, projectName: projectName, pseudo: pseudo })
     })
     .then(response => {
         if (!response.ok) {
             return response.json().then(error => {
-                throw new Error(error.error || 'Network response was not ok');
+                throw new Error(error.error || 'erreur réseau.');
             });
         }
-        loadFoldersAndFiles(projectName, pseudo); // Reload folders to reflect the deletion
+        loadFoldersAndFiles(projectName, pseudo); 
     })
-    .catch(error => console.error('Error deleting file:', error));
+    .catch(error => console.error('Erreur suppression du fichier :', error));
 }
 
-// Configuration pour charger les fichiers nécessaires de Monaco Editor
 require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.27.0/min/vs' }});
 require(['vs/editor/editor.main'], function () {
     editor = monaco.editor.create(document.getElementById('editor'), {
@@ -413,11 +439,8 @@ function getAuthToken() {
     for (let i = 0; i < ca.length; i++) {
         let c = ca[i].trim();
         if (c.indexOf(name) === 0) {
-            const token = c.substring(name.length, c.length);
-            console.log('Auth token found:', token);
-            return token;
+            return c.substring(name.length, c.length);
         }
     }
-    console.log('Auth token not found');
     return "";
 }

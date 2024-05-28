@@ -5,7 +5,6 @@ window.onload = function() {
         return;
     }
 
-    // Fetch current theme setting
     fetch('rest/userTheme?pseudo=' + encodeURIComponent(pseudo))
         .then(response => response.json())
         .then(data => {
@@ -30,13 +29,13 @@ window.onload = function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Pseudo mis à jour avec succès.');
+                alert('Pseudo mis à jour.');
                 window.location.href = 'projects.html?pseudo=' + newPseudo;
             } else {
                 alert('Erreur: ' + data.error);
             }
         })
-        .catch(error => console.error('Error updating pseudo:', error));
+        .catch(error => console.error('Erreur:', error));
     });
 
     document.getElementById('update-password-btn').addEventListener('click', function() {
@@ -58,12 +57,12 @@ window.onload = function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Mot de passe mis à jour avec succès.');
+                alert('Mot de passe mis à jour.');
             } else {
                 alert('Erreur: ' + data.error);
             }
         })
-        .catch(error => console.error('Error updating password:', error));
+        .catch(error => console.error('Erreur:', error));
     });
 
     document.getElementById('update-theme-btn').addEventListener('click', function() {
@@ -79,12 +78,12 @@ window.onload = function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Thème mis à jour avec succès.');
+                alert('Thème mis à jour.');
                 document.getElementById('current-theme').textContent = 'Thème actuel: ' + (theme === 'true' ? 'Clair' : 'Sombre');
             } else {
                 alert('Erreur: ' + data.error);
             }
         })
-        .catch(error => console.error('Error updating theme:', error));
+        .catch(error => console.error('Erreur:', error));
     });
 };
