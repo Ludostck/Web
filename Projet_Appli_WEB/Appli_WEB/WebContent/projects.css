@@ -71,23 +71,56 @@ main {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1rem;
-    align-items: flex-start; /* Ajoute cette ligne pour éviter que les boutons prennent toute la hauteur */
-    flex-grow: 1; /* Permet à la grille de projets de s'étendre pour remplir l'espace disponible */
+    align-items: flex-start;
+    flex-grow: 1;
+}
+
+.project-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #252525;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .project-button {
-    background-color: #252525;
+    background-color: transparent;
     color: #f0f0f0;
     border: none;
-    padding: 1rem 2rem;
-    border-radius: 0.5rem;
     cursor: pointer;
     font-size: 1.25rem;
     font-family: 'Arial', sans-serif;
-    text-align: center;
+    text-align: left;
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    height: auto; /* Assure que la hauteur des boutons s'ajuste au contenu */
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+.project-button i {
+    font-size: 1.5rem;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+}
+
+.delete-button {
+    background-color: transparent;
+    color: #f0f0f0;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem; /* Réduit la taille de l'icône de suppression */
+    transition: color 0.3s ease;
+    margin-left: 0.5rem; /* Ajoute un espace entre l'icône de dossier et l'icône de suppression */
+}
+
+.delete-button:hover {
+    color: #ff5555;
 }
 
 .project-button:hover {
@@ -96,11 +129,6 @@ main {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
-.project-button i {
-    font-size: 1.5rem;
-    vertical-align: middle;
-    margin-right: 0.5rem;
-}
 
 .file-container {
     display: flex;

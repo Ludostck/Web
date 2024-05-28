@@ -29,14 +29,27 @@ function loadUserProjects(pseudo) {
         } else {
             projects.forEach(project => {
                 console.log('Adding project to grid:', project.title);
+                const projectContainer = document.createElement('div');
+                projectContainer.className = 'project-container';
+
                 const projectButton = document.createElement('button');
                 projectButton.className = 'project-button';
-                projectButton.innerHTML = `<i class="material-icons">folder</i> ${project.title}`;
-                projectButton.addEventListener('click', function() {
-                    console.log('Project clicked:', project.title);
-                    window.location.href = `code.html?pseudo=${encodeURIComponent(pseudo)}&projectName=${encodeURIComponent(project.title)}`;
+                projectButton.innerHTML = `<i class="material-icons">folder</i> ${project.title} <i class="fas fa-trash-alt delete-button"></i>`;
+                
+                projectButton.addEventListener('click', function(event) {
+                    if (event.target.classList.contains('delete-button')) {
+                        event.stopPropagation(); // Prevent the click event from propagating to the project button
+                        if (confirm(`Voulez-vous vraiment supprimer le projet "${project.title}"?`)) {
+                            deleteProject(pseudo, project.title);
+                        }
+                    } else {
+                        console.log('Project clicked:', project.title);
+                        window.location.href = `code.html?pseudo=${encodeURIComponent(pseudo)}&projectName=${encodeURIComponent(project.title)}`;
+                    }
                 });
-                projectsGrid.appendChild(projectButton);
+
+                projectContainer.appendChild(projectButton);
+                projectsGrid.appendChild(projectContainer);
             });
         }
     })
@@ -46,6 +59,39 @@ function loadUserProjects(pseudo) {
         projectsGrid.innerHTML = '<p>Erreur de chargement des projets</p>';
     });
 }
+
+function deleteProject(pseudo, projectName) {
+    fetch('rest/supprimer-projet', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': getAuthToken()
+        },
+        body: JSON.stringify({ pseudo: pseudo, projectName: projectName })
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            return response.json().then(error => {
+                throw new Error(error.error || 'Network response was not ok');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Delete response data:', data);
+        if (data.success) {
+            console.log('Project deleted successfully:', projectName);
+            loadUserProjects(pseudo);
+        } else {
+            console.error('Error deleting project:', data);
+            alert("Erreur lors de la suppression du projet.");
+        }
+    })
+    .catch(error => console.error('Error deleting project:', error));
+}
+
+
 
 window.onload = function() {
     var pseudo = new URLSearchParams(window.location.search).get('pseudo');

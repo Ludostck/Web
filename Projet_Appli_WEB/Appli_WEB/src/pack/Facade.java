@@ -895,6 +895,72 @@ public class Facade {
                            .build();
         }
     }
+    
+    @POST
+    @Path("/supprimer-projet")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response supprimerProjet(Map<String, String> requestData, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
+        if (!isValidToken(authToken + "=")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                           .entity("{\"error\": \"Invalid token. Please log in again.\"}")
+                           .build();
+        }
+
+        String pseudo = requestData.get("pseudo");
+        String projectName = requestData.get("projectName");
+
+        try {
+            // Récupération de l'utilisateur par son pseudo
+            User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
+                          .setParameter("pseudo", pseudo)
+                          .getSingleResult();
+
+            // Récupération de la session de l'utilisateur
+            Session session = user.getSession();
+            if (session == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity("{\"error\": \"Session not found for user.\"}")
+                               .build();
+            }
+
+            // Récupérer le projet à partir du nom du projet et de la session utilisateur
+            Projet projet = em.createQuery("SELECT p FROM Projet p WHERE p.title = :title AND p.owner = :owner", Projet.class)
+                              .setParameter("title", projectName)
+                              .setParameter("owner", session)
+                              .getSingleResult();
+
+            if (projet == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                               .entity("{\"error\": \"Project not found.\"}")
+                               .build();
+            }
+
+            // Suppression de tous les dossiers et fichiers associés au projet
+            for (Dossier dossier : projet.getDossiers()) {
+                for (Fichier fichier : dossier.getFichiers()) {
+                    em.remove(fichier);
+                }
+                em.remove(dossier);
+            }
+
+            // Suppression du projet
+            em.remove(projet);
+
+            return Response.ok("{\"success\": true}").build();
+        } catch (NoResultException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                           .entity("{\"error\": \"User or project not found.\"}")
+                           .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("{\"error\": \"Unable to delete project.\"}")
+                           .build();
+        }
+    }
+
+
 
 
 }
