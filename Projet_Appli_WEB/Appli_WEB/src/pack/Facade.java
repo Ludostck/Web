@@ -325,7 +325,6 @@ public class Facade {
             // Création du nouveau dossier
             Dossier newFolder = new Dossier();
             newFolder.setNom(folderName);
-            newFolder.setProjet(projet);
 
             // Ajout du dossier au projet
             if (projet.getDossiers() == null) {
@@ -380,17 +379,7 @@ public class Facade {
                                .build();
             }
 
-            // Récupérer le projet à partir du nom du projet et de la session utilisateur
-            Projet projet = em.createQuery("SELECT p FROM Projet p WHERE p.title = :title AND p.owner = :owner", Projet.class)
-                              .setParameter("title", projectName)
-                              .setParameter("owner", session)
-                              .getSingleResult();
 
-            if (projet == null) {
-                return Response.status(Response.Status.NOT_FOUND)
-                               .entity("{\"error\": \"Project not found.\"}")
-                               .build();
-            }
 
             // Récupérer le dossier par son ID
             Dossier dossier = em.find(Dossier.class, folderId);
@@ -404,7 +393,6 @@ public class Facade {
             Fichier newFile = new Fichier();
             newFile.setNom(fileName);
             newFile.setDossier(dossier);
-            newFile.setProjet(projet);
             newFile.setContenu("test");
 
             // Persister le fichier

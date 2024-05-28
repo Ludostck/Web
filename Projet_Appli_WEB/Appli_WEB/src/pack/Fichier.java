@@ -21,10 +21,6 @@ public class Fichier {
     private String type;
     private String contenu;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "projet_id")
-    @JsonIgnore 
-    private Projet projet;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "dossier_id")
@@ -65,13 +61,7 @@ public class Fichier {
         this.contenu = contenu;
     }
 
-    public Projet getProjet() {
-        return projet;
-    }
 
-    public void setProjet(Projet projet) {
-        this.projet = projet;
-    }
 
     public Dossier getDossier() {
         return dossier;
