@@ -39,9 +39,7 @@ public class Facade {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response traiterConnexion(User user) {
-        try {
-            LOGGER.info("Attempting login for user: " + user.getPseudo());
-            
+        try {            
             // Chiffrer le mot de passe avec SHA-256
             String hashedPassword = hashPassword(user.getPassword());
             
@@ -51,25 +49,21 @@ public class Facade {
                                .getSingleResult();
 
             if (foundUser != null) {
-                // Si la connexion est rÈussie, gÈnÈrez un token unique
+                // Si la connexion est r√©ussie, g√©n√©rez un token unique
                 String authToken = generateToken();
                 foundUser.setAuth_token(authToken);
-                // CrÈez un cookie pour stocker le token
+                // Cr√©ez un cookie pour stocker le token
                 NewCookie authCookie = new NewCookie(AUTH_COOKIE_NAME, authToken, "/", null, null, NewCookie.DEFAULT_MAX_AGE, false, false);
 
-                LOGGER.info("Login successful for user: " + foundUser.getPseudo());
-                return Response.ok("{\"success\": true, \"message\": \"Connexion rÈussie\", \"pseudo\": \"" + foundUser.getPseudo() + "\"}")
+                return Response.ok("{\"success\": true, \"message\": \"Connexion r√©ussie\", \"pseudo\": \"" + foundUser.getPseudo() + "\"}")
                         .cookie(authCookie)
                         .build();
             } else {
-                LOGGER.warning("Login failed for user: " + user.getPseudo());
                 return Response.status(Response.Status.UNAUTHORIZED).entity("{\"success\": false, \"message\": \"Identifiant ou mot de passe incorrect\"}").build();
             }
         } catch (NoResultException e) {
-            LOGGER.warning("User not found for pseudo: " + user.getPseudo());
             return Response.status(Response.Status.UNAUTHORIZED).entity("{\"success\": false, \"message\": \"Identifiant ou mot de passe incorrect\"}").build();
         } catch (Exception e) {
-            LOGGER.severe("Error during login for user: " + user.getPseudo() + " - " + e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST).entity("{\"success\": false, \"message\": \"Erreur lors de la connexion\"}").build();
         }
     }
@@ -81,13 +75,10 @@ public class Facade {
     @Transactional
     public Response createUser(User user) {
         try {
-            LOGGER.info("Creating user: " + user.getPseudo());
-
             long count = em.createQuery("SELECT COUNT(u) FROM User u WHERE u.pseudo = :pseudo", Long.class)
                            .setParameter("pseudo", user.getPseudo())
                            .getSingleResult();
             if (count > 0) {
-                LOGGER.warning("User with pseudo " + user.getPseudo() + " already exists.");
                 return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"User with this pseudo already exists.\"}").build();
             }
 
@@ -107,10 +98,8 @@ public class Facade {
             NewCookie authCookie = new NewCookie("auth_token", authToken, "/", null, null, NewCookie.DEFAULT_MAX_AGE, false, false);
             em.persist(user);
 
-            LOGGER.info("User created successfully: " + user.getPseudo());
             return Response.ok("{\"pseudo\": \"" + user.getPseudo() + "\"}").cookie(authCookie).build();
         } catch (Exception e) {
-            LOGGER.severe("Error creating user: " + user.getPseudo() + " - " + e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\": \"Unable to create user.\"}").build();
         }
     }
@@ -119,43 +108,35 @@ public class Facade {
     @Path("/projects")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response getUserProjects(@QueryParam("pseudo") String pseudo, @CookieParam(AUTH_COOKIE_NAME) String authToken) {
-        LOGGER.info("Received request to get projects for pseudo: " + pseudo);
-        
+    public Response getUserProjects(@QueryParam("pseudo") String pseudo, @CookieParam(AUTH_COOKIE_NAME) String authToken) {        
         try {
-            // VÈrifier la validitÈ du token
+            // V√©rifier la validit√© du token
             if (!isValidToken(authToken + "=")) {
                 return Response.status(Response.Status.UNAUTHORIZED)
                                .entity("{\"error\": \"Invalid token. Please log in again.\"}")
                                .build();
             }
 
-            // RÈcupÈration de l'utilisateur par son pseudo
+            // R√©cup√©ration de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
                           .getSingleResult();
-            LOGGER.info("Found user: " + user.getPseudo() + " with ID: " + user.getId());
 
-            // RÈcupÈration de la session de l'utilisateur
+            // R√©cup√©ration de la session de l'utilisateur
             Session session = user.getSession();
             if (session == null) {
-                LOGGER.warning("No session found for user: " + user.getPseudo());
                 return Response.status(Response.Status.NOT_FOUND)
                                .entity("{\"error\": \"Session not found for user.\"}")
                                .build();
             }
-            LOGGER.info("Found session for user: " + user.getPseudo() + " with session ID: " + session.getId());
 
             List<Projet> projects = session.getProjets();
-            LOGGER.info("Number of projects found: " + projects.size());
             return Response.ok(projects).build();
         } catch (NoResultException e) {
-            LOGGER.warning("User or session not found for pseudo: " + pseudo);
             return Response.status(Response.Status.NOT_FOUND)
                            .entity("{\"error\": \"User or session not found.\"}")
                            .build();
         } catch (Exception e) {
-            LOGGER.severe("Error loading projects for pseudo: " + pseudo + " - " + e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST)
                            .entity("{\"error\": \"Unable to load projects.\"}")
                            .build();
@@ -192,7 +173,7 @@ public class Facade {
                 em.merge(user);
             }
 
-            // VÈrifier si le projet existe dÈj‡
+            // V√©rifier si le projet existe d√©j√†
             Long count = em.createQuery("SELECT COUNT(p) FROM Projet p WHERE p.title = :projectName AND p.owner.user = :user", Long.class)
                            .setParameter("projectName", projectName)
                            .setParameter("user", user)
@@ -297,12 +278,12 @@ public class Facade {
         String folderName = requestData.get("folderName");
         
         try {
-            // RÈcupÈration de l'utilisateur par son pseudo
+            // R√©cup√©ration de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
                           .getSingleResult();
 
-            // RÈcupÈration de la session de l'utilisateur
+            // R√©cup√©ration de la session de l'utilisateur
             Session session = user.getSession();
             if (session == null) {
                 return Response.status(Response.Status.NOT_FOUND)
@@ -310,7 +291,7 @@ public class Facade {
                                .build();
             }
 
-            // RÈcupÈrer le projet ‡ partir du nom du projet et de la session utilisateur
+            // R√©cup√©rer le projet √† partir du nom du projet et de la session utilisateur
             Projet projet = em.createQuery("SELECT p FROM Projet p WHERE p.title = :title AND p.owner = :owner", Projet.class)
                               .setParameter("title", projectName)
                               .setParameter("owner", session)
@@ -322,7 +303,7 @@ public class Facade {
                                .build();
             }
 
-            // CrÈation du nouveau dossier
+            // Cr√©ation du nouveau dossier
             Dossier newFolder = new Dossier();
             newFolder.setNom(folderName);
 
@@ -366,12 +347,12 @@ public class Facade {
         Long folderId = Long.valueOf(requestData.get("folderId"));
 
         try {
-            // RÈcupÈration de l'utilisateur par son pseudo
+            // R√©cup√©ration de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
                           .getSingleResult();
 
-            // RÈcupÈration de la session de l'utilisateur
+            // R√©cup√©ration de la session de l'utilisateur
             Session session = user.getSession();
             if (session == null) {
                 return Response.status(Response.Status.NOT_FOUND)
@@ -381,7 +362,7 @@ public class Facade {
 
 
 
-            // RÈcupÈrer le dossier par son ID
+            // R√©cup√©rer le dossier par son ID
             Dossier dossier = em.find(Dossier.class, folderId);
             if (dossier == null) {
                 return Response.status(Response.Status.NOT_FOUND)
@@ -389,7 +370,7 @@ public class Facade {
                                .build();
             }
 
-            // CrÈation du nouveau fichier
+            // Cr√©ation du nouveau fichier
             Fichier newFile = new Fichier();
             newFile.setNom(fileName);
             newFile.setDossier(dossier);
@@ -504,22 +485,20 @@ public class Facade {
         }
 
         try {
-            // RÈcupÈration de l'utilisateur par son pseudo
+            // R√©cup√©ration de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
                           .getSingleResult();
-            LOGGER.info("Found user: " + user.getPseudo() + " with ID: " + user.getId());
 
-            // RÈcupÈration de la session de l'utilisateur
+            // R√©cup√©ration de la session de l'utilisateur
             Session session = user.getSession();
             if (session == null) {
-                LOGGER.warning("No session found for user: " + user.getPseudo());
                 return Response.status(Response.Status.NOT_FOUND)
                                .entity("{\"error\": \"Session not found for user.\"}")
                                .build();
             }
 
-            // RÈcupÈrer le projet ‡ partir du nom du projet et de la session utilisateur
+            // R√©cup√©rer le projet √† partir du nom du projet et de la session utilisateur
             Projet projet = em.createQuery("SELECT p FROM Projet p WHERE p.title = :title AND p.owner = :owner", Projet.class)
                               .setParameter("title", projectName)
                               .setParameter("owner", session)
@@ -751,7 +730,7 @@ public class Facade {
         }
     }
 
-    // MÈthode pour hasher le mot de passe avec SHA-256
+    // M√©thode pour hasher le mot de passe avec SHA-256
     private String hashPassword(String password) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hash = digest.digest(password.getBytes());
@@ -811,12 +790,12 @@ public class Facade {
         String projectName = requestData.get("projectName");
 
         try {
-            // RÈcupÈration de l'utilisateur par son pseudo
+            // R√©cup√©ration de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
                           .getSingleResult();
 
-            // RÈcupÈration du dossier par son ID
+            // R√©cup√©ration du dossier par son ID
             Dossier dossier = em.find(Dossier.class, folderId);
             if (dossier == null) {
                 return Response.status(Response.Status.NOT_FOUND)
@@ -856,12 +835,12 @@ public class Facade {
         String projectName = requestData.get("projectName");
 
         try {
-            // RÈcupÈration de l'utilisateur par son pseudo
+            // R√©cup√©ration de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
                           .getSingleResult();
 
-            // RÈcupÈration du fichier par son ID
+            // R√©cup√©ration du fichier par son ID
             Fichier fichier = em.find(Fichier.class, fileId);
             if (fichier == null) {
                 return Response.status(Response.Status.NOT_FOUND)
@@ -900,12 +879,12 @@ public class Facade {
         String projectName = requestData.get("projectName");
 
         try {
-            // RÈcupÈration de l'utilisateur par son pseudo
+            // R√©cup√©ration de l'utilisateur par son pseudo
             User user = em.createQuery("SELECT u FROM User u WHERE u.pseudo = :pseudo", User.class)
                           .setParameter("pseudo", pseudo)
                           .getSingleResult();
 
-            // RÈcupÈration de la session de l'utilisateur
+            // R√©cup√©ration de la session de l'utilisateur
             Session session = user.getSession();
             if (session == null) {
                 return Response.status(Response.Status.NOT_FOUND)
@@ -913,7 +892,7 @@ public class Facade {
                                .build();
             }
 
-            // RÈcupÈrer le projet ‡ partir du nom du projet et de la session utilisateur
+            // R√©cup√©rer le projet √† partir du nom du projet et de la session utilisateur
             Projet projet = em.createQuery("SELECT p FROM Projet p WHERE p.title = :title AND p.owner = :owner", Projet.class)
                               .setParameter("title", projectName)
                               .setParameter("owner", session)
@@ -925,7 +904,7 @@ public class Facade {
                                .build();
             }
 
-            // Suppression de tous les dossiers et fichiers associÈs au projet
+            // Suppression de tous les dossiers et fichiers associ√©s au projet
             for (Dossier dossier : projet.getDossiers()) {
                 for (Fichier fichier : dossier.getFichiers()) {
                     em.remove(fichier);
